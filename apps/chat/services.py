@@ -18,6 +18,7 @@ from apps.receipts.models import Receipt, ReceiptLine
 from apps.deliveries.models import Delivery, DeliveryLine
 from apps.transfers.models import Transfer, TransferLine
 from apps.adjustments.models import Adjustment, AdjustmentLine
+from apps.contacts.models import Supplier, Customer
 from apps.ledger.models import Stock, StockMove
 
 logger = logging.getLogger(__name__)
@@ -47,13 +48,17 @@ You understand natural language requests and convert them into structured JSON a
 - Fields: product (FK), location (FK), quantity
 - Represents current stock per product per location
 
+### Contact
+- Supplier: name, email, phone, address, is_active
+- Customer: name, email, phone, address, is_active
+
 ### Receipt (incoming stock)
-- Fields: id, ref (RCP-YYYY-NNNN), supplier_name, supplier_contact, destination (Location FK), status, scheduled_date, notes
+- Fields: id, ref (RCP-YYYY-NNNN), supplier (FK), supplier_name (legacy), destination (Location FK), status, scheduled_date, notes
 - Status flow: draft → waiting → ready → done (or cancelled at any stage)
 - Lines: product (FK), expected_qty, received_qty, unit (FK), notes
 
 ### Delivery (outgoing stock)
-- Fields: id, ref (DLV-YYYY-NNNN), customer_name, customer_contact, source (Location FK), status, scheduled_date, notes
+- Fields: id, ref (DLV-YYYY-NNNN), customer (FK), customer_name (legacy), source (Location FK), status, scheduled_date, notes
 - Status flow: draft → waiting → ready → done (or cancelled at any stage)
 - Lines: product (FK), requested_qty, delivered_qty, unit (FK), notes
 
@@ -284,6 +289,22 @@ def _resolve_unit(unit_str):
     return u
 
 
+def _resolve_supplier(name):
+    """Resolve or create a Supplier by name."""
+    if not name:
+        return None
+    supplier, _ = Supplier.objects.get_or_create(name=name)
+    return supplier
+
+
+def _resolve_customer(name):
+    """Resolve or create a Customer by name."""
+    if not name:
+        return None
+    customer, _ = Customer.objects.get_or_create(name=name)
+    return customer
+
+
 def _parse_date(date_str):
     """Parse YYYY-MM-DD string to date, fallback to today."""
     try:
@@ -409,7 +430,10 @@ def _exec_create_receipt(data, user):
     if not dest:
         return {'success': False, 'message': f"Could not find location: {data.get('destination_location')}"}
 
+    supplier = _resolve_supplier(data.get('supplier_name', ''))
+
     receipt = Receipt.objects.create(
+        supplier=supplier,
         supplier_name=data.get('supplier_name', 'Unknown Supplier'),
         supplier_contact=data.get('supplier_contact', ''),
         destination=dest,
@@ -453,7 +477,10 @@ def _exec_create_delivery(data, user):
     if not source:
         return {'success': False, 'message': f"Could not find location: {data.get('source_location')}"}
 
+    customer = _resolve_customer(data.get('customer_name', ''))
+
     delivery = Delivery.objects.create(
+        customer=customer,
         customer_name=data.get('customer_name', 'Unknown Customer'),
         customer_contact=data.get('customer_contact', ''),
         source=source,

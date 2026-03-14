@@ -13,9 +13,10 @@ INPUT_CLASS = 'w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outlin
 class ReceiptForm(forms.ModelForm):
     class Meta:
         model = Receipt
-        fields = ['supplier_name', 'supplier_contact', 'destination', 'scheduled_date', 'notes']
+        fields = ['supplier', 'supplier_name', 'supplier_contact', 'destination', 'scheduled_date', 'notes']
         widgets = {
-            'supplier_name': forms.TextInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Supplier name'}),
+            'supplier': forms.Select(attrs={'class': INPUT_CLASS}),
+            'supplier_name': forms.TextInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Legacy Supplier Name (optional)'}),
             'supplier_contact': forms.TextInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Contact info'}),
             'destination': forms.Select(attrs={'class': INPUT_CLASS}),
             'scheduled_date': forms.DateInput(attrs={'class': INPUT_CLASS, 'type': 'date'}),

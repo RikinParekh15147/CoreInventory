@@ -9,7 +9,9 @@ from django.db.models import Q
 from .models import Delivery
 from .forms import DeliveryForm, DeliveryLineFormSet
 from .services import validate_delivery
+from apps.contacts.models import Customer
 from apps.access.decorators import require_permission
+from apps.warehouses.models import Location
 
 
 @login_required
@@ -18,12 +20,27 @@ def delivery_list(request):
     q = request.GET.get('q', '').strip()
     if q:
         qs = qs.filter(Q(ref__icontains=q) | Q(customer_name__icontains=q))
+    
     status = request.GET.get('status')
     if status:
         qs = qs.filter(status=status)
+    
+    source_id = request.GET.get('source')
+    if source_id:
+        qs = qs.filter(source_id=source_id)
+
     paginator = Paginator(qs, 20)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'deliveries/list.html', {'page_obj': page_obj, 'q': q, 'status_filter': status})
+    
+    locations = Location.objects.filter(is_active=True)
+    
+    return render(request, 'deliveries/list.html', {
+        'page_obj': page_obj, 
+        'q': q, 
+        'status_filter': status,
+        'source_filter': source_id,
+        'locations': locations,
+    })
 
 
 @login_required
@@ -41,6 +58,15 @@ def delivery_create(request):
         formset = DeliveryLineFormSet(request.POST)
         if form.is_valid() and formset.is_valid():
             delivery = form.save(commit=False)
+            # Match existing customer case-sensitively
+            if not delivery.customer and delivery.customer_name:
+                customer = Customer.objects.filter(name=delivery.customer_name).first()
+                if not customer:
+                    customer = Customer.objects.create(name=delivery.customer_name)
+                delivery.customer = customer
+            elif delivery.customer and not delivery.customer_name:
+                delivery.customer_name = delivery.customer.name
+                
             delivery.created_by = request.user
             delivery.save()
             formset.instance = delivery
@@ -63,7 +89,15 @@ def delivery_edit(request, pk):
         form = DeliveryForm(request.POST, instance=delivery)
         formset = DeliveryLineFormSet(request.POST, instance=delivery)
         if form.is_valid() and formset.is_valid():
-            form.save()
+            delivery = form.save(commit=False)
+            if not delivery.customer and delivery.customer_name:
+                customer = Customer.objects.filter(name=delivery.customer_name).first()
+                if not customer:
+                    customer = Customer.objects.create(name=delivery.customer_name)
+                delivery.customer = customer
+            elif delivery.customer and not delivery.customer_name:
+                delivery.customer_name = delivery.customer.name
+            delivery.save()
             formset.save()
             messages.success(request, f'Delivery {delivery.ref} updated.')
             return redirect('deliveries:detail', pk=delivery.pk)

@@ -10,4 +10,5 @@ app_name = 'chat'
 urlpatterns = [
     path('send/', views.chat_send, name='send'),
     path('execute/', views.chat_execute, name='execute'),
+    path('metadata/', views.chat_metadata, name='metadata'),
 ]

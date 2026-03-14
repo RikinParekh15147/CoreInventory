@@ -10,6 +10,7 @@ from .models import Adjustment
 from .forms import AdjustmentForm, AdjustmentLineFormSet
 from .services import validate_adjustment
 from apps.access.decorators import require_permission
+from apps.warehouses.models import Location
 
 
 @login_required
@@ -18,12 +19,27 @@ def adjustment_list(request):
     q = request.GET.get('q', '').strip()
     if q:
         qs = qs.filter(Q(ref__icontains=q))
+    
     status = request.GET.get('status')
     if status:
         qs = qs.filter(status=status)
+    
+    loc_id = request.GET.get('location')
+    if loc_id:
+        qs = qs.filter(location_id=loc_id)
+
     paginator = Paginator(qs, 20)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'adjustments/list.html', {'page_obj': page_obj, 'q': q, 'status_filter': status})
+    
+    locations = Location.objects.filter(is_active=True)
+    
+    return render(request, 'adjustments/list.html', {
+        'page_obj': page_obj, 
+        'q': q, 
+        'status_filter': status,
+        'loc_filter': loc_id,
+        'locations': locations,
+    })
 
 
 @login_required

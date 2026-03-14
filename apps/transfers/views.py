@@ -10,6 +10,7 @@ from .models import Transfer
 from .forms import TransferForm, TransferLineFormSet
 from .services import validate_transfer
 from apps.access.decorators import require_permission
+from apps.warehouses.models import Location
 
 
 @login_required
@@ -18,12 +19,32 @@ def transfer_list(request):
     q = request.GET.get('q', '').strip()
     if q:
         qs = qs.filter(Q(ref__icontains=q))
+    
     status = request.GET.get('status')
     if status:
         qs = qs.filter(status=status)
+    
+    from_id = request.GET.get('from_location')
+    if from_id:
+        qs = qs.filter(from_location_id=from_id)
+        
+    to_id = request.GET.get('to_location')
+    if to_id:
+        qs = qs.filter(to_location_id=to_id)
+
     paginator = Paginator(qs, 20)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'transfers/list.html', {'page_obj': page_obj, 'q': q, 'status_filter': status})
+    
+    locations = Location.objects.filter(is_active=True)
+    
+    return render(request, 'transfers/list.html', {
+        'page_obj': page_obj, 
+        'q': q, 
+        'status_filter': status,
+        'from_filter': from_id,
+        'to_filter': to_id,
+        'locations': locations,
+    })
 
 
 @login_required

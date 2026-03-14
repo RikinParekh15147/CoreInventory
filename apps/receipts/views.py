@@ -11,7 +11,9 @@ from django.db.models import Q
 from .models import Receipt
 from .forms import ReceiptForm, ReceiptLineFormSet
 from .services import validate_receipt
+from apps.contacts.models import Supplier
 from apps.access.decorators import require_permission
+from apps.warehouses.models import Location
 
 
 @login_required
@@ -20,13 +22,26 @@ def receipt_list(request):
     q = request.GET.get('q', '').strip()
     if q:
         qs = qs.filter(Q(ref__icontains=q) | Q(supplier_name__icontains=q))
+    
     status = request.GET.get('status')
     if status:
         qs = qs.filter(status=status)
+    
+    dest_id = request.GET.get('destination')
+    if dest_id:
+        qs = qs.filter(destination_id=dest_id)
+
     paginator = Paginator(qs, 20)
     page_obj = paginator.get_page(request.GET.get('page'))
+    
+    locations = Location.objects.filter(is_active=True)
+    
     return render(request, 'receipts/list.html', {
-        'page_obj': page_obj, 'q': q, 'status_filter': status,
+        'page_obj': page_obj, 
+        'q': q, 
+        'status_filter': status,
+        'dest_filter': dest_id,
+        'locations': locations,
     })
 
 
@@ -50,6 +65,15 @@ def receipt_create(request):
         formset = ReceiptLineFormSet(request.POST)
         if form.is_valid() and formset.is_valid():
             receipt = form.save(commit=False)
+            # Match existing supplier case-sensitively
+            if not receipt.supplier and receipt.supplier_name:
+                supplier = Supplier.objects.filter(name=receipt.supplier_name).first()
+                if not supplier:
+                    supplier = Supplier.objects.create(name=receipt.supplier_name)
+                receipt.supplier = supplier
+            elif receipt.supplier and not receipt.supplier_name:
+                receipt.supplier_name = receipt.supplier.name
+            
             receipt.created_by = request.user
             receipt.save()
             formset.instance = receipt
@@ -74,7 +98,15 @@ def receipt_edit(request, pk):
         form = ReceiptForm(request.POST, instance=receipt)
         formset = ReceiptLineFormSet(request.POST, instance=receipt)
         if form.is_valid() and formset.is_valid():
-            form.save()
+            receipt = form.save(commit=False)
+            if not receipt.supplier and receipt.supplier_name:
+                supplier = Supplier.objects.filter(name=receipt.supplier_name).first()
+                if not supplier:
+                    supplier = Supplier.objects.create(name=receipt.supplier_name)
+                receipt.supplier = supplier
+            elif receipt.supplier and not receipt.supplier_name:
+                receipt.supplier_name = receipt.supplier.name
+            receipt.save()
             formset.save()
             messages.success(request, f'Receipt {receipt.ref} updated.')
             return redirect('receipts:detail', pk=receipt.pk)

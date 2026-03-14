@@ -138,13 +138,28 @@
                             <!-- create_receipt -->
                             <template x-if="pendingAction.action_type === 'create_receipt'">
                                 <div class="space-y-2">
-                                    <input type="text" x-model="pendingAction.data.supplier_name" placeholder="Supplier Name" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
-                                    <input type="text" x-model="pendingAction.data.destination_location" placeholder="Destination Location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <input list="suppliers-list" x-model="pendingAction.data.supplier_name" placeholder="Supplier Name" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <datalist id="suppliers-list">
+                                        <template x-for="s in metadata.suppliers" :key="s.id">
+                                            <option :value="s.name"></option>
+                                        </template>
+                                    </datalist>
+                                    <select x-model="pendingAction.data.destination_location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                        <option value="">Select Destination Location</option>
+                                        <template x-for="loc in metadata.locations" :key="loc.id">
+                                            <option :value="loc.name" x-text="loc.name"></option>
+                                        </template>
+                                    </select>
                                     <template x-if="pendingAction.data.lines">
                                         <div class="space-y-2">
                                             <template x-for="(line, i) in pendingAction.data.lines" :key="i">
                                                 <div class="flex gap-2">
-                                                    <input type="text" x-model="line.product_name" placeholder="Product" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                    <select x-model="line.product_name" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                        <option value="">Select Product</option>
+                                                        <template x-for="p in metadata.products" :key="p.id">
+                                                            <option :value="p.name" x-text="p.name + ' (' + p.sku + ')'"></option>
+                                                        </template>
+                                                    </select>
                                                     <input type="number" x-model="line.expected_qty" placeholder="Qty" class="w-24 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
                                                 </div>
                                             </template>
@@ -156,13 +171,28 @@
                             <!-- create_delivery -->
                             <template x-if="pendingAction.action_type === 'create_delivery'">
                                 <div class="space-y-2">
-                                    <input type="text" x-model="pendingAction.data.customer_name" placeholder="Customer Name" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
-                                    <input type="text" x-model="pendingAction.data.source_location" placeholder="Source Location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <input list="customers-list" x-model="pendingAction.data.customer_name" placeholder="Customer Name" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <datalist id="customers-list">
+                                        <template x-for="c in metadata.customers" :key="c.id">
+                                            <option :value="c.name"></option>
+                                        </template>
+                                    </datalist>
+                                    <select x-model="pendingAction.data.source_location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                        <option value="">Select Source Location</option>
+                                        <template x-for="loc in metadata.locations" :key="loc.id">
+                                            <option :value="loc.name" x-text="loc.name"></option>
+                                        </template>
+                                    </select>
                                     <template x-if="pendingAction.data.lines">
                                         <div class="space-y-2">
                                             <template x-for="(line, i) in pendingAction.data.lines" :key="i">
                                                 <div class="flex gap-2">
-                                                    <input type="text" x-model="line.product_name" placeholder="Product" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                    <select x-model="line.product_name" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                        <option value="">Select Product</option>
+                                                        <template x-for="p in metadata.products" :key="p.id">
+                                                            <option :value="p.name" x-text="p.name + ' (' + p.sku + ')'"></option>
+                                                        </template>
+                                                    </select>
                                                     <input type="number" x-model="line.requested_qty" placeholder="Qty" class="w-24 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
                                                 </div>
                                             </template>
@@ -174,13 +204,28 @@
                             <!-- create_transfer -->
                             <template x-if="pendingAction.action_type === 'create_transfer'">
                                 <div class="space-y-2">
-                                    <input type="text" x-model="pendingAction.data.from_location" placeholder="From Location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
-                                    <input type="text" x-model="pendingAction.data.to_location" placeholder="To Location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <select x-model="pendingAction.data.from_location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                        <option value="">Source Location</option>
+                                        <template x-for="loc in metadata.locations" :key="loc.id">
+                                            <option :value="loc.name" x-text="loc.name"></option>
+                                        </template>
+                                    </select>
+                                    <select x-model="pendingAction.data.to_location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                        <option value="">Destination Location</option>
+                                        <template x-for="loc in metadata.locations" :key="loc.id">
+                                            <option :value="loc.name" x-text="loc.name"></option>
+                                        </template>
+                                    </select>
                                     <template x-if="pendingAction.data.lines">
                                         <div class="space-y-2">
                                             <template x-for="(line, i) in pendingAction.data.lines" :key="i">
                                                 <div class="flex gap-2">
-                                                    <input type="text" x-model="line.product_name" placeholder="Product" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                    <select x-model="line.product_name" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                        <option value="">Select Product</option>
+                                                        <template x-for="p in metadata.products" :key="p.id">
+                                                            <option :value="p.name" x-text="p.name + ' (' + p.sku + ')'"></option>
+                                                        </template>
+                                                    </select>
                                                     <input type="number" x-model="line.qty" placeholder="Qty" class="w-24 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
                                                 </div>
                                             </template>
@@ -192,7 +237,12 @@
                             <!-- create_adjustment -->
                             <template x-if="pendingAction.action_type === 'create_adjustment'">
                                 <div class="space-y-2">
-                                    <input type="text" x-model="pendingAction.data.location" placeholder="Location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <select x-model="pendingAction.data.location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                        <option value="">Select Location</option>
+                                        <template x-for="loc in metadata.locations" :key="loc.id">
+                                            <option :value="loc.name" x-text="loc.name"></option>
+                                        </template>
+                                    </select>
                                     <select x-model="pendingAction.data.reason" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
                                         <option value="count_correction">Count Correction</option>
                                         <option value="damage">Damage</option>
@@ -204,7 +254,12 @@
                                         <div class="space-y-2">
                                             <template x-for="(line, i) in pendingAction.data.lines" :key="i">
                                                 <div class="flex gap-2">
-                                                    <input type="text" x-model="line.product_name" placeholder="Product" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                    <select x-model="line.product_name" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                        <option value="">Select Product</option>
+                                                        <template x-for="p in metadata.products" :key="p.id">
+                                                            <option :value="p.name" x-text="p.name + ' (' + p.sku + ')'"></option>
+                                                        </template>
+                                                    </select>
                                                     <input type="number" x-model="line.actual_qty" placeholder="Actual Qty" class="w-24 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
                                                 </div>
                                             </template>
@@ -253,11 +308,26 @@ function chatPanel() {
         loading: false,
         messages: [],
         pendingAction: null,
+        metadata: { products: [], locations: [], suppliers: [], customers: [] },
         csrfToken: '{{ csrf_token }}',
 
         toggle() {
             this.open = !this.open;
-            if (this.open) this.$nextTick(() => this.$refs.chatInput?.focus());
+            if (this.open) {
+                this.$nextTick(() => this.$refs.chatInput?.focus());
+                this.fetchMetadata();
+            }
+        },
+
+        async fetchMetadata() {
+            if (this.metadata.products.length > 0) return;
+            try {
+                const res = await fetch('/chat/metadata/');
+                const data = await res.json();
+                this.metadata = data;
+            } catch (err) {
+                console.error('Failed to fetch chat metadata', err);
+            }
         },
 
         scrollBottom() {

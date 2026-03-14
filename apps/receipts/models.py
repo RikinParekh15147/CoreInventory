@@ -22,7 +22,14 @@ class Receipt(models.Model):
     ]
 
     ref = models.CharField(max_length=20, unique=True, blank=True)
-    supplier_name = models.CharField(max_length=255)
+    supplier = models.ForeignKey(
+        'contacts.Supplier',
+        on_delete=models.PROTECT,
+        related_name='receipts',
+        null=True,
+        blank=True,
+    )
+    supplier_name = models.CharField(max_length=255, help_text="Legacy name field")
     supplier_contact = models.CharField(max_length=255, blank=True)
     destination = models.ForeignKey(
         'warehouses.Location',

@@ -22,7 +22,14 @@ class Delivery(models.Model):
     ]
 
     ref = models.CharField(max_length=20, unique=True, blank=True)
-    customer_name = models.CharField(max_length=255)
+    customer = models.ForeignKey(
+        'contacts.Customer',
+        on_delete=models.PROTECT,
+        related_name='deliveries',
+        null=True,
+        blank=True,
+    )
+    customer_name = models.CharField(max_length=255, help_text="Legacy name field")
     customer_contact = models.CharField(max_length=255, blank=True)
     source = models.ForeignKey(
         'warehouses.Location',

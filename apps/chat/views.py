@@ -10,6 +10,8 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from .services import call_groq, execute_action
+from apps.products.models import Product
+from apps.warehouses.models import Location
 
 
 @login_required
@@ -60,3 +62,17 @@ def chat_execute(request):
 
     result = execute_action(action_json, request.user)
     return JsonResponse({'result': result})
+@login_required
+def chat_metadata(request):
+    """Return all active products, locations, and contacts for UI dropdowns."""
+    from apps.contacts.models import Supplier, Customer
+    products = list(Product.objects.filter(is_active=True).values('id', 'name', 'sku'))
+    locations = list(Location.objects.filter(is_active=True).values('id', 'name'))
+    suppliers = list(Supplier.objects.filter(is_active=True).values('id', 'name'))
+    customers = list(Customer.objects.filter(is_active=True).values('id', 'name'))
+    return JsonResponse({
+        'products': products,
+        'locations': locations,
+        'suppliers': suppliers,
+        'customers': customers,
+    })

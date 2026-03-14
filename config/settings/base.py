@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'apps.dashboard',
     'apps.alerts',
     'apps.chat',
+    'apps.contacts',
 ]
 
 MIDDLEWARE = [

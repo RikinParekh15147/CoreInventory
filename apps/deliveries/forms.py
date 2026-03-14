@@ -10,9 +10,10 @@ INPUT_CLASS = 'w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outlin
 class DeliveryForm(forms.ModelForm):
     class Meta:
         model = Delivery
-        fields = ['customer_name', 'customer_contact', 'source', 'scheduled_date', 'notes']
+        fields = ['customer', 'customer_name', 'customer_contact', 'source', 'scheduled_date', 'notes']
         widgets = {
-            'customer_name': forms.TextInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Customer name'}),
+            'customer': forms.Select(attrs={'class': INPUT_CLASS}),
+            'customer_name': forms.TextInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Legacy Customer Name (optional)'}),
             'customer_contact': forms.TextInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Contact info'}),
             'source': forms.Select(attrs={'class': INPUT_CLASS}),
             'scheduled_date': forms.DateInput(attrs={'class': INPUT_CLASS, 'type': 'date'}),
