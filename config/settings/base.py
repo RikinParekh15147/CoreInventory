@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.ledger',
     'apps.dashboard',
     'apps.alerts',
+    'apps.chat',
 ]
 
 MIDDLEWARE = [
@@ -171,3 +172,6 @@ DEFAULT_FROM_EMAIL = config(
     'DEFAULT_FROM_EMAIL',
     default='CoreInventory <noreply@yourdomain.com>'
 )
+
+# ─── Groq AI ──────────────────────────────────────────────────
+GROQ_API_KEY = config('GROQ_API_KEY', default='')

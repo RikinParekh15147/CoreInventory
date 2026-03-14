@@ -14,3 +14,4 @@ django-cloudinary-storage>=0.3
 python-decouple>=3.8
 Pillow>=10.0
 django-extensions>=3.2
+groq>=0.4

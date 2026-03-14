@@ -28,4 +28,5 @@ urlpatterns = [
     path('alerts/', include('apps.alerts.urls')),
     path('admin-panel/', include('apps.access.urls')),
     path('settings/', include('apps.warehouses.urls')),
+    path('chat/', include('apps.chat.urls')),
 ]

@@ -99,6 +99,12 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     Dashboard
                 </a>
+                <!-- AI Chat Button -->
+                <button @click="$dispatch('toggle-chat')" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full text-left group" id="chat-sidebar-btn">
+                    <svg class="w-5 h-5 text-purple-400 group-hover:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/></svg>
+                    <span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-medium">AI Chat</span>
+                    <span class="ml-auto text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-mono">✨</span>
+                </button>
                 <a href="/products/" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {% if '/products/' in request.path %}active text-white{% endif %}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                     Products
@@ -219,6 +225,11 @@
     </div>
     {% endif %}
 
+    {% if user.is_authenticated %}
+    {% include 'chat/panel.html' %}
+    {% endif %}
+
+    <style>[x-cloak] { display: none !important; }</style>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
