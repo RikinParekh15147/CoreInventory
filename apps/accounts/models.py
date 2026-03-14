@@ -24,6 +24,9 @@ class CustomUser(AbstractUser):
         related_name='users',
         help_text='Restricts user to one warehouse',
     )
+    is_approved = models.BooleanField(default=False)
+    otp_code = models.CharField(max_length=6, blank=True, null=True)
+    otp_expiry = models.DateTimeField(blank=True, null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['full_name']

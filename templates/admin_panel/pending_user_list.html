@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Pending Approvals — Admin Panel{% endblock %}
+{% block page_title %}Pending Approvals{% endblock %}
+{% block breadcrumb %}
+<a href="/dashboard/" class="hover:text-primary">Home</a> <span class="mx-1">/</span> 
+<a href="{% url 'access:dashboard' %}" class="hover:text-primary">Admin</a> <span class="mx-1">/</span> 
+<a href="{% url 'access:user-list' %}" class="hover:text-primary">Users</a> <span class="mx-1">/</span> 
+<span class="text-gray-400">Pending</span>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900">Awaiting Review</h2>
+            <p class="text-sm text-gray-500 line-tight">Review and approve new user registrations.</p>
+        </div>
+        <a href="{% url 'access:user-list' %}" class="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Back to Active Users
+        </a>
+    </div>
+
+    <div class="space-y-4">
+        {% for u in users %}
+        <div class="bg-white rounded-2xl border border-gray-200 p-6 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                    <span class="text-xl font-semibold text-gray-500">{{ u.full_name|make_list|first|default:"?"|upper }}</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900">{{ u.full_name|default:"Unnamed User" }}</h3>
+                    <p class="text-sm text-gray-500">{{ u.email }}</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider rounded">Requested: {{ u.role.name|default:"No Role" }}</span>
+                        <span class="text-[10px] text-gray-400">Joined {{ u.date_joined|timesince }} ago</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'access:approve-user' u.pk %}" class="px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition">
+                    Review & Approve
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">
+            <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-600">No pending approvals</h3>
+            <p class="text-sm text-gray-400 mt-1">When new users sign up, they will appear here.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

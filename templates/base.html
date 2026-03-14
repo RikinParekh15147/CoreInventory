@@ -77,8 +77,10 @@
 </head>
 <body class="bg-content-bg min-h-screen" x-data="{ logoutModalOpen: false }">
 
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and user.is_approved or user.is_superuser %}
     <div class="flex min-h-screen">
+        <!-- Dashboard layout as before ... -->
+        <!-- (Keeping the rest of the file content for simplicity in this replace call) -->
         <!-- ═══ SIDEBAR ═══ -->
         <aside class="w-64 bg-sidebar-bg text-sidebar-text flex flex-col fixed h-full z-30" x-data="{ open: true }">
             <!-- Brand -->

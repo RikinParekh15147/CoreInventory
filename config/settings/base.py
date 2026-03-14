@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'apps.accounts.middleware.ApprovalMiddleware',
     'apps.access.middleware.AdminPanelAccessMiddleware',
 ]
 

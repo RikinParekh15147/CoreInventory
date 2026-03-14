@@ -16,9 +16,7 @@ DATABASES = {
     }
 }
 
-# Console email backend for development
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
+# Email backend is inherited from base.py (which uses .env)
 # Disable Cloudinary in dev – use local file storage
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 MEDIA_URL = '/media/'

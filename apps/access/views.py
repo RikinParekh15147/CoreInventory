@@ -25,8 +25,32 @@ def admin_dashboard(request):
 
 @login_required
 def user_list(request):
-    users = CustomUser.objects.select_related('role', 'warehouse').order_by('-date_joined')
-    return render(request, 'admin_panel/user_list.html', {'users': users})
+    users = CustomUser.objects.select_related('role', 'warehouse').filter(is_approved=True).order_by('-date_joined')
+    pending_users = CustomUser.objects.filter(is_approved=False).count()
+    return render(request, 'admin_panel/user_list.html', {
+        'users': users,
+        'pending_count': pending_users
+    })
+
+@login_required
+def pending_user_list(request):
+    users = CustomUser.objects.select_related('role', 'warehouse').filter(is_approved=False).order_by('-date_joined')
+    return render(request, 'admin_panel/pending_user_list.html', {'users': users})
+
+@login_required
+def approve_user(request, pk):
+    user = get_object_or_404(CustomUser, pk=pk)
+    if request.method == 'POST':
+        role_id = request.POST.get('role')
+        if role_id:
+            user.role_id = role_id
+        user.is_approved = True
+        user.save()
+        messages.success(request, f'User "{user.email}" has been approved.')
+        return redirect('access:pending-user-list')
+    
+    roles = Role.objects.all()
+    return render(request, 'admin_panel/approve_user.html', {'target_user': user, 'roles': roles})
 
 
 @login_required
@@ -43,6 +67,7 @@ def user_edit(request, pk):
         user.role_id = role_id if role_id else None
         user.warehouse_id = warehouse_id if warehouse_id else None
         user.is_active = 'is_active' in request.POST
+        user.is_approved = 'is_approved' in request.POST
         user.save()
         messages.success(request, f'User "{user.email}" updated.')
         return redirect('access:user-list')

@@ -13,67 +13,63 @@
                 </svg>
             </div>
             <h1 class="text-2xl font-bold text-white">Create <span class="text-blue-400">Account</span></h1>
-            <p class="text-gray-400 text-sm mt-2">Join CoreInventory to manage your stock</p>
+            <p class="text-gray-400 text-sm mt-2">Join CoreInventory to manage your warehouse</p>
         </div>
 
         <!-- Signup Form -->
-        <form method="POST" action="{% url 'account_signup' %}" class="space-y-5">
+        <form method="POST" class="space-y-4">
             {% csrf_token %}
 
-            {% if form.errors %}
+            {% if form.non_field_errors %}
             <div class="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
                 <p class="text-red-400 text-sm">
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}{{ error }} {% endfor %}
-                    {% endfor %}
+                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
                 </p>
             </div>
             {% endif %}
 
             <div>
-                <label for="id_full_name" class="block text-sm font-medium text-gray-300 mb-1.5">Full Name</label>
-                <input type="text" name="full_name" id="id_full_name"
-                       class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                       placeholder="John Doe"
-                       {% if form.full_name.value %}value="{{ form.full_name.value }}"{% endif %}>
+                <label class="block text-sm font-medium text-gray-300 mb-1.5">Full Name</label>
+                {{ form.full_name }}
+                {% if form.full_name.errors %}<p class="text-red-400 text-xs mt-1">{{ form.full_name.errors.0 }}</p>{% endif %}
             </div>
 
             <div>
-                <label for="id_email" class="block text-sm font-medium text-gray-300 mb-1.5">Email Address</label>
-                <input type="email" name="email" id="id_email" required
-                       class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                       placeholder="you@example.com"
-                       {% if form.email.value %}value="{{ form.email.value }}"{% endif %}>
+                <label class="block text-sm font-medium text-gray-300 mb-1.5">Email Address</label>
+                {{ form.email }}
+                {% if form.email.errors %}<p class="text-red-400 text-xs mt-1">{{ form.email.errors.0 }}</p>{% endif %}
             </div>
 
             <div>
-                <label for="id_password1" class="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
-                <input type="password" name="password1" id="id_password1" required
-                       class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                       placeholder="••••••••">
+                <label class="block text-sm font-medium text-gray-300 mb-1.5">Requested Role</label>
+                {{ form.role }}
+                {% if form.role.errors %}<p class="text-red-400 text-xs mt-1">{{ form.role.errors.0 }}</p>{% endif %}
             </div>
 
             <div>
-                <label for="id_password2" class="block text-sm font-medium text-gray-300 mb-1.5">Confirm Password</label>
-                <input type="password" name="password2" id="id_password2" required
-                       class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                       placeholder="••••••••">
+                <label class="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
+                {{ form.password }}
+                {% if form.password.errors %}<p class="text-red-400 text-xs mt-1">{{ form.password.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1.5">Confirm Password</label>
+                {{ form.confirm_password }}
+                {% if form.confirm_password.errors %}<p class="text-red-400 text-xs mt-1">{{ form.confirm_password.errors.0 }}</p>{% endif %}
             </div>
 
             <button type="submit"
                     class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900">
-                Create Account
+                Sign Up
             </button>
         </form>
 
-        <p class="text-center text-gray-400 text-sm mt-6">
-            Already have an account?
-            <a href="{% url 'account_login' %}" class="text-blue-400 hover:text-blue-300 transition-colors font-medium">Sign in</a>
-        </p>
+        <div class="mt-6 text-center">
+            <p class="text-sm text-gray-400">
+                Already have an account? 
+                <a href="{% url 'account_login' %}" class="text-blue-400 hover:text-blue-300 font-medium">Sign In</a>
+            </p>
+        </div>
     </div>
-
-    <p class="text-center text-gray-500 text-xs mt-6">
-        CoreInventory v1.0 &middot; Inventory Management System
-    </p>
 </div>
 {% endblock %}
