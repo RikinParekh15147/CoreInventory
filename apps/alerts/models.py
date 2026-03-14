@@ -1,17 +1,28 @@
 from django.db import models
+from django.conf import settings
 
 
 class Notification(models.Model):
-    """Low-stock / out-of-stock alert notification."""
+    """Low-stock / out-of-stock / AI alert notification."""
     TYPE_CHOICES = [
         ('low_stock', 'Low Stock'),
         ('out_of_stock', 'Out of Stock'),
+        ('ai_insight', 'AI Insight'),
     ]
 
     product = models.ForeignKey(
         'products.Product',
         on_delete=models.CASCADE,
         related_name='notifications',
+        null=True,
+        blank=True,
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        null=True,
+        blank=True,
     )
     location = models.ForeignKey(
         'warehouses.Location',
@@ -29,4 +40,6 @@ class Notification(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'{self.get_type_display()}: {self.product.name}'
+        if self.type == 'ai_insight':
+            return f'AI Insight for {self.user}'
+        return f'{self.get_type_display()}: {self.product.name if self.product else "N/A"}'

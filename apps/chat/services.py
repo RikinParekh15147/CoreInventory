@@ -102,18 +102,21 @@ You MUST return a JSON object with this exact structure:
 8. **general_answer** — For informational questions (no mutation)
    data: { "answer": "..." }
 
+9. **request_info** — When critical data is missing (e.g., location, product, quantity) needed to perform a requested mutation.
+   data: { "question": "What is the specific missing information you need from the user? Example: 'Which warehouse should I create this receipt in?'" }
+
 ## Rules:
 - For dates, if none specified use today's date.
 - Match product names and locations fuzzily from the context provided.
-- If you cannot determine a required field, set needs_confirmation to true and explain what's missing in the summary.
-- For queries, set needs_confirmation to false.
+- If the user asks to create/update something but misses a CRITICAL detail (like product name, location, or quantity), you MUST use `action_type: "request_info"` instead of guessing or executing. Set the summary to the question you want to ask. Set needs_confirmation to false.
+- For queries (query_products, query_stock, general_answer, request_info), set needs_confirmation to false.
 - For ALL mutations (create_*, update_*), set needs_confirmation to true.
+- Before suggesting a mutation, verify the user has the required permission listed in the context. If they do not, use `general_answer` to explain they lack permission.
 - Always reply in valid JSON. No extra text before or after the JSON.
 """
 
-
-def _build_context():
-    """Gather current DB state for LLM context."""
+def _build_context(user=None):
+    """Gather current DB state for LLM context, including user permissions."""
     # Products with stock
     products = Product.objects.filter(is_active=True).select_related('category', 'unit')
     product_list = []
@@ -151,8 +154,19 @@ def _build_context():
         for d in recent_deliveries
     ]
 
+
+    # User permissions
+    user_context = "Unknown User"
+    if user:
+        role_name = user.role.name if user.role else "No Role"
+        perms = [rp.permission.codename for rp in getattr(user.role, 'role_permissions', []) if rp.granted] if user.role else []
+        user_context = f"User: {user.full_name or user.email} | Role: {role_name}\nGranted Permissions: {', '.join(perms) if perms else 'None'}"
+
     context = f"""
 ## Current Database State
+
+### Current User (Permissions)
+{user_context}
 
 ### Products (active, up to 50):
 {chr(10).join(product_list) if product_list else '  (none)'}
@@ -174,10 +188,10 @@ def _build_context():
     return context
 
 
-def call_groq(user_prompt):
+def call_groq(user_prompt, user=None):
     """Send prompt to Groq and return parsed JSON action."""
     client = Groq(api_key=settings.GROQ_API_KEY)
-    context = _build_context()
+    context = _build_context(user)
     full_user_message = f"{context}\n\n## User Request:\n{user_prompt}"
 
     try:
@@ -280,7 +294,25 @@ def execute_action(action_json, user):
         'create_adjustment': _exec_create_adjustment,
         'update_status': _exec_update_status,
         'general_answer': _exec_general_answer,
+        'request_info': _exec_request_info,
     }
+
+    # Extract required permission dynamically based on action mappings
+    req_perms = {
+        'create_receipt': 'can_create_receipt',
+        'create_delivery': 'can_create_delivery',
+        'create_transfer': 'can_create_transfer',
+        'create_adjustment': 'can_create_adjustment',
+        'query_products': 'can_view_products',
+        'query_stock': 'can_view_move_history',
+    }
+    
+    # Check permissions if mapped
+    if action_type in req_perms and user.role:
+        perm_code = req_perms[action_type]
+        has_perm = user.role.role_permissions.filter(permission__codename=perm_code, granted=True).exists()
+        if not has_perm:
+             return {'success': False, 'message': f'Lacking permission: {perm_code}. Action rejected.'}
 
     executor = executors.get(action_type)
     if not executor:
@@ -607,3 +639,70 @@ def _exec_general_answer(data, user):
         'message': data.get('answer', 'No answer provided.'),
         'result_type': 'text',
     }
+
+
+def _exec_request_info(data, user):
+    """Return requested info question — no mutation."""
+    return {
+        'success': True,
+        'message': data.get('question', 'Could you provide more details?'),
+        'result_type': 'text',
+    }
+
+
+def generate_user_insights(user):
+    """
+    Generate actionable AI insights based on the current database state
+    and save them as Notifications for the given user.
+    """
+    from apps.alerts.models import Notification
+    client = Groq(api_key=settings.GROQ_API_KEY)
+    context = _build_context()
+    
+    prompt = f"""
+{context}
+
+Based on the above inventory state, please provide exactly 3 actionable insights or warnings for the warehouse manager.
+Consider low stock items, lack of pending receipts, high volume of pending deliveries vs available stock, etc.
+
+Return the result as a JSON object with this exact structure, no extra text:
+{{
+  "insights": [
+    "Insight 1 text...",
+    "Insight 2 text...",
+    "Insight 3 text..."
+  ]
+}}
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {"role": "system", "content": "You are an inventory analyst AI. Focus on actionable insights."},
+                {"role": "user", "content": prompt},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.3,
+            max_tokens=1024,
+        )
+        content = response.choices[0].message.content
+        data = json.loads(content)
+        insights = data.get('insights', [])
+        
+        # Keep things fresh: remove old insights for this user
+        Notification.objects.filter(user=user, type='ai_insight').delete()
+        
+        for ins in insights:
+            Notification.objects.create(
+                user=user,
+                type='ai_insight',
+                message=ins,
+                is_read=False
+            )
+            
+        return {"success": True, "count": len(insights)}
+
+    except Exception as e:
+        logger.error("Error generating AI insights: %s", e)
+        return {"success": False, "message": str(e)}
