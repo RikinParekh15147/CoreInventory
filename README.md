@@ -102,3 +102,91 @@ Here is exactly how CoreInventory effortlessly handles day-to-day warehouse oper
    *Action:* Execute Stock Adjustment. -> *Stock: -3 kg.*
 
 *Every single action in this 4-step real-world flow is immutably documented inside the **Stock Ledger**, providing perfect clarity for auditors and AI analysis.*
+
+---
+
+## 💻 Local Development Setup
+
+Follow these instructions to run the application locally on your machine.
+
+### Prerequisites
+- **Python 3.10+** installed
+- **Redis Server** installed and running (for Celery background tasks)
+- **Git**
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/Odoo-CoreInventory.git
+cd Odoo-CoreInventory
+```
+
+### 2. Create the Virtual Environment & Install Dependencies
+```bash
+python3 -m venv venv
+
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+### 3. Configure Environment Variables
+Create a file named `.env` in the root folder (`Odoo-CoreInventory/.env`). Add the following mandatory keys:
+
+```ini
+SECRET_KEY=generate_a_secure_key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Default SQLite config for local testing (No Postgres required)
+DATABASE_URL=sqlite:///db.sqlite3
+
+# Redis broker for background tasks
+REDIS_URL=redis://localhost:6379/0
+
+# (Optional) Email settings for OTP features
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your_email@gmail.com
+EMAIL_HOST_PASSWORD=your_app_password
+
+# (Mandatory for AI features)
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+### 4. Run Database Migrations
+Set up your local SQLite database structure.
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### 5. Running the Application Stack
+Since this application utilizes background tasks for the AI and email sending, you must run three separate processes in three different terminal windows (ensure your virtual environment is activated in all of them).
+
+**Terminal 1:** Run the Django Server
+```bash
+python manage.py runserver
+```
+
+**Terminal 2:** Run the Celery Worker (Executes tasks)
+```bash
+# On Windows, you may need to use gevent/eventlet, or use WSL
+celery -A config worker -l info
+```
+
+**Terminal 3:** Run the Celery Beat (Schedules recurring AI Insight tasks)
+```bash
+celery -A config beat -l info
+```
+
+### 6. Create Superuser & Access Dashboard
+In a new terminal:
+```bash
+python manage.py createsuperuser
+```
+Follow the prompts, then navigate to `http://localhost:8000` in your web browser and login!
