@@ -1,125 +1,144 @@
-# CoreInventory
+# CoreInventory: Smart Inventory Management System
 
-CoreInventory is a modern, responsive, and robust Inventory Management System built with **Django 5, HTMX, Alpine.js, and Tailwind CSS**. It is designed to handle complex warehouse operations, maintain an immutable ledger, and provide real-time stock visibility with a seamless, single-page-application (SPA-like) user experience.
+**CoreInventory** is a comprehensive and intelligently structured inventory management application designed to streamline internal operations, track stock movements, and optimize warehouse performance. 
 
----
-
-## 🚀 Key Features
-
-### Core Operations
-*   **Receipts:** Manage incoming stock from suppliers with a robust validation workflow (Draft → Waiting → Ready → Done).
-*   **Deliveries:** Process outbound orders to customers, ensuring stock availability before processing.
-*   **Transfers:** Handle internal inventory movements between different warehouses and locations.
-*   **Adjustments:** Reconcile system inventory with physical stock counts easily.
-
-### Inventory & Ledger
-*   **Products Catalog:** Manage items with SKUs, Categories, Units of Measure, and configurable Reorder Points.
-*   **Immutable Ledger & StockMoves:** Every validated operation generates immutable `StockMove` records, ensuring a perfect audit trail.
-*   **Real-time Stock Valuation:** The system calculates real-time aggregated static per product and per location.
-
-### Management & Alerts
-*   **Admin Panel:** A restricted interface for system administrators to manage Users, Warehouses, Locations, custom Roles, and Permissions.
-*   **Notifications System:** Real-time HTMX-powered notification badges alerting managers about low stock or out-of-stock items.
-*   **Dynamic Dashboard:** High-level metrics, KPI summary cards, and quick navigation.
+By mapping real-world physical stock adjustments, receipts, and deliveries to a digital ledger, CoreInventory provides businesses with total visibility and control over their supply chain operations from a single centralized dashboard.
 
 ---
 
-## 🛠️ Tech Stack
+## 🚀 How CoreInventory Helps You
 
-*   **Backend:** Django 5, Django REST Framework
-*   **Frontend:** Django Templates, HTMX, Alpine.js, Tailwind CSS (via CDN)
-*   **Database:** SQLite (Development) / PostgreSQL (Production ready)
-*   **Authentication:** `django-allauth` (Email-based, OTP support)
-*   **Static Files:** WhiteNoise for efficient static asset serving in production.
-
----
-
-## ⚙️ Quick Setup Guide
-
-Follow these steps to set up the project locally on your machine.
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/harshilnpatel2003/Odoo-CoreInventory.git
-cd Odoo-CoreInventory
-git checkout backend
-```
-
-### 2. Set Up Python Virtual Environment
-```bash
-# Create the virtual environment
-python -m venv venv
-
-# Activate (Windows)
-venv\Scripts\activate
-
-# Activate (macOS/Linux)
-source venv/bin/activate
-```
-
-### 3. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Database Setup & Migrations
-```bash
-# Apply all database migrations
-python manage.py migrate
-
-# Seed the database with demo data (Important for initial roles/permissions)
-# This creates demo Users, Products, Categories, Warehouses, and configures Roles.
-python manage.py seed_data
-```
-
-### 5. Static Files (Optional for Prod Verification)
-```bash
-python manage.py collectstatic --noinput
-```
-
-### 6. Run the Application
-```bash
-python manage.py runserver
-```
-
-Open your browser and navigate to **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)**.
+Running a warehouse without dedicated software leads to misplaced stock, unfulfilled orders, and lost revenue. CoreInventory helps managers and workers:
+- **Prevent Stockouts & Overstocking:** Proactive low-stock alerts and tracking mechanisms.
+- **Maintain Accurate Ledgers:** Every movement—from vendor receipt to customer delivery—is securely logged automatically.
+- **Save Time with Smart Navigation:** Search by SKU, dynamic filters by document type or status, and dedicated product categories allow instant data retrieval.
+- **Organize Multiple Locations:** Efficiently manage complex, multi-warehouse ecosystems and internal goods movement without manual spreadsheets.
 
 ---
 
-## 🔑 Demo Login Credentials
+## 🔒 Authentication & Security
 
-The `seed_data` command generates the following accounts for immediate testing:
-
-| Role | Email | Password | Access Level |
-|------|-------|----------|--------------|
-| **Admin** | `admin@coreinventory.com` | `admin123` | Full system access + Admin Panel |
-| **Manager** | `manager@coreinventory.com` | `manager123` | Can validate operations & manage products |
-| **Staff** | `staff1@coreinventory.com` | `staff123` | Can view and create draft operations |
-| **Viewer** | `viewer@coreinventory.com` | `viewer123` | Read-only access to standard modules |
+A fast, secure, and intuitive onboarding process ensures only authorized personnel can access business-critical operations.
+- **User Registration & Login:** Direct authentication mechanism.
+- **OTP-Based Password Reset:** Secure password recovery using One-Time Passwords.
+- **Immediate Dashboard Access:** Post-login redirection straight into the operational hub.
 
 ---
 
-## 📁 Project Architecture
+## 📊 Dashboard View & KPIs
 
-```
-├── config/            # Core settings, URL routing, generic configurations
-├── apps/
-│   ├── accounts/      # Custom User model replacing default Django user
-│   ├── access/        # RBAC (Role-Based Access Control) & Admin Panel
-│   ├── dashboard/     # Aggregated KPI and summary views
-│   ├── products/      # Catalog, categories, reorder levels
-│   ├── warehouses/    # Site and bin-level location management
-│   ├── ledger/        # Immutable StockMoves and static balance snapshots
-│   ├── receipts/      # Inbound logistics module
-│   ├── deliveries/    # Outbound logistics module
-│   ├── transfers/     # Internal logistics module
-│   ├── adjustments/   # Cycle counts and discrepancy logging
-│   └── alerts/        # Threshold monitoring and notifications
-├── templates/         # Reusable HTML partials, layouts, forms
-└── static/            # Static assets (custom CSS, JS)
-```
+The landing page acts as the operational nerve center, providing a high-level snapshot of current inventory health.
 
-## 📜 Key Commands
+### Key Performance Indicators (KPIs)
+- **Total Products in Stock:** Real-time visibility of aggregate inventory.
+- **Low Stock & Out of Stock:** Immediate alerts for critical inventory depletion.
+- **Pending Receipts:** Awaiting vendor deliveries.
+- **Pending Deliveries:** Awaiting outbound shipments to customers.
+- **Internal Transfers Scheduled:** Overview of domestic stock movement.
 
-*   `python manage.py create_permissions` — Idempotent command to generate default Role-Based Access guidelines.
-*   `python manage.py seed_data` — Populates databases securely using factories for immediate testing.
+### Dynamic Smart Filters
+Quickly sort and find operational data via robust filtering:
+- **By Document Type:** Receipts / Delivery / Internal / Adjustments
+- **By Status:** Draft, Waiting, Ready, Done, Canceled
+- **By Location/Warehouse:** Pinpoint stock across different geographical buildings.
+- **By Product Category:** Filter items based on organizational classifications.
+
+---
+
+## 🗺️ Navigation & Interface Structure
+
+The system is logically divided to reduce operational friction.
+
+### 1. Products
+- **Creation & Management:** Register new or edit existing products.
+- **Location Mapping:** Check exact stock availability per isolated bin/location.
+- **Categorization:** Group products logically.
+- **Reordering Rules:** Automate stock replenishment limits.
+
+### 2. Operations Hub
+- **Receipts:** Manage incoming stock from vendors.
+- **Delivery Orders:** Manage outbound stock to clients.
+- **Internal Transfers:** Manage stock shifting across internal warehouse zones.
+- **Inventory Adjustments:** Reconcile system records with physical audits.
+- **Move History & Ledger:** Unalterable audit log of every item that moved.
+
+### 3. Settings & Configuration
+- **Warehouse Setup:** Define building names and internal storage bins to map out the physical architecture electronically.
+
+### 4. Profile Menu
+- **My Profile & Settings**
+- **System Logout**
+
+---
+
+## 🛠️ Core Features In-Depth
+
+### 1. Product Management Master
+Easily create robust product profiles encompassing:
+- Name and description
+- Unique SKU / Codes
+- Organizational Category
+- Unit of Measure (liters, pieces, kg, etc.)
+- Initial stock configurations
+
+### 2. Receipts (Incoming Stock Flow)
+Used securely when shipments arrive from suppliers.
+**The Flow:**
+1. Create a new digital receipt.
+2. Link the supplier and select incoming product lines.
+3. Input received quantities accurately.
+4. Validate the receipt → **System automatically increases available stock.**
+> *Example:* You receive a shipment of 50 units of "Steel Rods". Upon validation, your digital stock level instantly augments to +50.
+
+### 3. Delivery Orders (Outgoing Stock Flow)
+Critical for ensuring customer sales orders are fulfilled efficiently.
+**The Flow:**
+1. Pick the requested items from their bin locations.
+2. Pack the order for shipment.
+3. Validate the delivery → **System automatically decreases available stock.**
+> *Example:* A sales order is processed for 10 office chairs. When the delivery order is validated, the available stock for chairs immediately reduces by 10.
+
+### 4. Internal Transfers
+Operate gracefully across complex enterprise domains by transferring stock without altering total net company stock.
+**Common Scenarios:**
+- Main Warehouse → Production Floor
+- Rack A → Rack B
+- Warehouse Building 1 → Warehouse Building 2
+> *Each specific internal movement is strictly logged in the audit ledger.*
+
+### 5. Stock Adjustments (Physical Reconciliations)
+Occasionally, digital records misalign with reality due to damage, shrinkage, or counting errors. Adjustments fix these mismatches easily.
+**The Flow:**
+1. Select the specific product and physical location.
+2. Enter the absolute counted physical quantity.
+3. The system automatically computes the difference, logs the adjustment reason, and updates the core ledger.
+
+### 6. Additional Integrated Features
+- **Low Stock Alarms:** Never run out of your best-selling or critical-path items.
+- **Multi-Warehouse Support:** Infinitely scalable physical architectures.
+- **Deep Search:** Smart SKU mapping allows scanning to instantly pull up product data.
+
+---
+
+## 📘 Simplified Example: Understanding the Supply Flow
+
+Here is exactly how CoreInventory effortlessly handles day-to-day warehouse operations natively:
+
+- **Step 1: Receive Goods**
+  - Scenario: A vendor delivers 100 kg of Steel to the receiving dock.
+  - Action: Validate Receipt. 
+  - Result: *Stock becomes +100 kg.*
+- **Step 2: Stage for Production**
+  - Scenario: The Steel must be moved from the dock to the cutting floor.
+  - Action: Validate Internal Transfer (Main Store → Production Rack). 
+  - Result: *Total stock is unchanged, but the digital location map is instantly updated.*
+- **Step 3: Fulfill Customer Sales**
+  - Scenario: Customer buys manufactured steel frames utilizing 20 kg of steel.
+  - Action: Validate Delivery Order. 
+  - Result: *Stock reduces by -20 kg.*
+- **Step 4: Audit & Shrinkage**
+  - Scenario: A forklift operator accidentally damages 3 kg of steel.
+  - Action: Execute Stock Adjustment. 
+  - Result: *Stock reduces by -3 kg.*
+
+*Every single action in this 4-step real-world flow is immutably documented inside the **Stock Ledger**, providing perfect clarity for auditors and management.*
