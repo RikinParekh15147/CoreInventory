@@ -17,13 +17,14 @@ DATABASES = {
 }
 
 # Email backend is inherited from base.py (which uses .env)
-# Disable Cloudinary in dev – use local file storage
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Simpler static file storage for dev
 STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
     'staticfiles': {
         'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     },
