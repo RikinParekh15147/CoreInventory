@@ -4,7 +4,7 @@ Dashboard views.
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Value, DecimalField
 from apps.products.models import Product
 from apps.receipts.models import Receipt
 from apps.deliveries.models import Delivery
@@ -12,6 +12,7 @@ from apps.ledger.models import StockMove, Stock
 from apps.alerts.models import Notification
 from apps.chat.services import generate_user_insights
 from django.views.decorators.http import require_POST
+from django.db.models.functions import Coalesce
 
 
 @login_required
@@ -20,19 +21,16 @@ def dashboard_view(request):
     total_products = Product.objects.filter(is_active=True).count()
 
     # Low stock and out of stock — aggregate by product
-    stock_totals = (
-        Stock.objects.filter(product__is_active=True)
-        .values('product')
-        .annotate(total_qty=Sum('quantity'))
+    products_with_stock = Product.objects.filter(is_active=True).annotate(
+        total_qty=Coalesce(Sum('stock_records__quantity'), Value(0, output_field=DecimalField()))
     )
 
     low_stock_count = 0
     out_of_stock_count = 0
-    for entry in stock_totals:
-        product = Product.objects.get(pk=entry['product'])
-        if entry['total_qty'] <= 0:
+    for product in products_with_stock:
+        if product.total_qty <= 0:
             out_of_stock_count += 1
-        elif entry['total_qty'] <= product.reorder_point:
+        elif product.total_qty <= product.reorder_point:
             low_stock_count += 1
 
     pending_receipts = Receipt.objects.filter(
