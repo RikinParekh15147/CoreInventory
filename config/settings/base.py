@@ -29,8 +29,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'django_htmx',
     'django_celery_beat',
-    'cloudinary',
-    'cloudinary_storage',
     'django_extensions',
 
     # Local apps
@@ -110,13 +108,9 @@ STORAGES = {
     },
 }
 
-# Media / Cloudinary
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
-    'API_KEY': config('CLOUDINARY_API_KEY', default=''),
-    'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
-}
+# Media files (Local Storage)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
