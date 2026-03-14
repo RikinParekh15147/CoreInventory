@@ -14,6 +14,9 @@ CoreInventory isn't just a ledger; it actively helps you manage your warehouse. 
 - **Action Generation:** The AI can autonomously draft system actions based on natural language commands. Tell it to *"Create a receipt for 50 pieces of Copper wire from Vendor X"* and it will parse your request into a structured database action awaiting your confirmation.
 - **Proactive Insights:** The AI continuously analyzes your stock levels, pending receipts, and delivery burdens, auto-generating real-time, actionable insights and warnings directly to your dashboard alerts.
 
+![AI Chat Request](DemoPictures/ai_chat_request.jpeg)
+![AI Chat Success](DemoPictures/ai_chat_success.jpeg)
+
 ### 🔐 Advanced Authentication & Security (OTP Support)
 Security is paramount when handling business assets. CoreInventory employs deep access control:
 - **User Registration & Login:** Email-first authentication structure.
@@ -26,6 +29,8 @@ Security is paramount when handling business assets. CoreInventory employs deep 
 ## 📊 The Command Center Dashboard
 
 The landing page acts as the operational nerve center, providing a high-level snapshot of current inventory health alongside AI intelligence.
+
+![Dashboard](DemoPictures/dashboard.jpeg)
 
 ### 📈 Core Key Performance Indicators (KPIs)
 - **Total Products in Stock:** Real-time visibility of total aggregate inventory.
@@ -57,6 +62,8 @@ Manage stock arriving from external suppliers.
 - **The Flow:** Create Draft → Add Supplier & Items → Awaiting Arrival → Validate Receipt.
 - **Result:** System automatically augments the available stock in the destination location and logs the transaction in the Ledger.
 
+![Receipt Panel](DemoPictures/reciept_panel.jpeg)
+
 ### 3. 📦 Delivery Orders (Outgoing Goods)
 Manage outbound fulfillment to clients or sales channels.
 - **The Flow:** Create Draft → Assign Customer & Items to Pick → Pack → Validate Delivery.
@@ -76,6 +83,8 @@ Fix mismatches between digital records and reality due to damage, shrinkage, the
 The unalterable backbone of the system.
 - Every time an item arrives, leaves, shifts, or is adjusted, a permanent **Stock Move** record is generated. 
 - Guarantees 100% traceability for accounting and auditing purposes.
+
+![Stock Move Ledger](DemoPictures/stock_move_ledger_panel.jpeg)
 
 ---
 
