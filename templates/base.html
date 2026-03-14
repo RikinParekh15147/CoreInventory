@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CoreInventory{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        primary: { DEFAULT: '#2563EB', 50: '#EFF6FF', 100: '#DBEAFE', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8' },
+                        sidebar: { bg: '#111827', text: '#9CA3AF', active: '#1F2937' },
+                        content: { bg: '#F9FAFB' },
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #2563EB;
+            --success: #16A34A;
+            --warning: #D97706;
+            --danger: #DC2626;
+            --info: #0891B2;
+            --sidebar-bg: #111827;
+            --sidebar-text: #9CA3AF;
+            --sidebar-active: #1F2937;
+            --content-bg: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --border: #E5E7EB;
+        }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .sidebar-link {
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--sidebar-active);
+            color: #FFFFFF;
+        }
+        .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+        .badge-draft { @apply bg-gray-100 text-gray-700; }
+        .badge-waiting { @apply bg-amber-100 text-amber-700; }
+        .badge-ready { @apply bg-blue-100 text-blue-700; }
+        .badge-done { @apply bg-green-100 text-green-700; }
+        .badge-cancelled { @apply bg-red-100 text-red-700 line-through; }
+
+        /* Toast animations */
+        .toast-enter { animation: slideInRight 0.3s ease-out; }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-content-bg min-h-screen">
+
+    {% if user.is_authenticated %}
+    <div class="flex min-h-screen">
+        <!-- ═══ SIDEBAR ═══ -->
+        <aside class="w-64 bg-sidebar-bg text-sidebar-text flex flex-col fixed h-full z-30" x-data="{ open: true }">
+            <!-- Brand -->
+            <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-700/50">
+                <div class="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-white font-semibold text-lg">Core</span><span class="text-primary font-semibold text-lg">Inventory</span>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                <a href="/dashboard/" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {% if request.path == '/dashboard/' %}active text-white{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Dashboard
+                </a>
+                <a href="/products/" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {% if '/products/' in request.path %}active text-white{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    Products
+                </a>
+
+                <div class="pt-3 pb-1 px-3">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Operations</p>
+                </div>
+                <a href="/receipts/" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {% if '/receipts/' in request.path %}active text-white{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Receipts
+                </a>
+                <a href="/deliveries/" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {% if '/deliveries/' in request.path %}active text-white{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    Deliveries
+                </a>
+                <a href="/transfers/" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {% if '/transfers/' in request.path %}active text-white{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    Transfers
+                </a>
+                <a href="/adjustments/" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {% if '/adjustments/' in request.path %}active text-white{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    Adjustments
+                </a>
+                <a href="/ledger/moves/" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {% if '/ledger/' in request.path %}active text-white{% endif %}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    Move History
+                </a>
+
+                {% load access_tags %}
+                {% has_permission request.user 'can_manage_warehouses' as can_settings %}
+                {% if can_settings %}
+                <div class="pt-3 pb-1 px-3">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Settings</p>
+                </div>
+                <a href="/settings/warehouses/" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    Warehouses
+                </a>
+                {% endif %}
+
+                {% has_permission request.user 'can_access_admin_panel' as can_admin %}
+                {% if can_admin or request.user.is_superuser %}
+                <a href="/admin-panel/" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Admin Panel
+                </a>
+                {% endif %}
+            </nav>
+
+            <!-- User Info (bottom) -->
+            <div class="px-4 py-4 border-t border-gray-700/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-primary/20 rounded-full flex items-center justify-center">
+                        <span class="text-primary text-sm font-semibold">{{ user.full_name|make_list|first|default:"U" }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate">{{ user.full_name|default:user.email }}</p>
+                        <p class="text-xs text-gray-400 truncate">{{ user.role.name|default:"No Role" }}</p>
+                    </div>
+                    <a href="/accounts/logout/" class="text-gray-400 hover:text-white transition-colors" title="Logout">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ═══ MAIN CONTENT ═══ -->
+        <main class="flex-1 ml-64">
+            <!-- Top Bar -->
+            <header class="bg-white border-b border-gray-200 sticky top-0 z-20">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <div>
+                        <h1 class="text-xl font-semibold text-gray-900">{% block page_title %}Dashboard{% endblock %}</h1>
+                        <nav class="text-sm text-gray-500 mt-0.5">
+                            {% block breadcrumb %}<a href="/dashboard/" class="hover:text-primary">Home</a>{% endblock %}
+                        </nav>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <!-- Notification Bell -->
+                        <button class="relative text-gray-400 hover:text-gray-600 transition-colors" title="Notifications">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                            <span id="notif-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
+                                  hx-get="/alerts/count/" hx-trigger="every 30s" hx-target="#notif-badge" hx-swap="outerHTML">
+                                0
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="p-6">
+                <!-- Messages -->
+                {% if messages %}
+                <div class="mb-4 space-y-2">
+                    {% for message in messages %}
+                    <div class="toast-enter flex items-center gap-3 p-4 rounded-lg border
+                        {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800
+                        {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
+                        {% elif message.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-800
+                        {% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+                        <span class="text-sm">{{ message }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    {% else %}
+    <!-- Unauthenticated layout (login, signup, etc.) -->
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
