@@ -42,6 +42,13 @@ def product_list(request):
     elif active_filter == 'no':
         qs = qs.filter(is_active=False)
 
+    # Stock status filter
+    stock_status = request.GET.get('stock_status')
+    if stock_status == 'low':
+        qs = [p for p in qs if 0 < p.annotated_stock <= p.reorder_point]
+    elif stock_status == 'out':
+        qs = [p for p in qs if p.annotated_stock <= 0]
+
     paginator = Paginator(qs, 20)
     page_obj = paginator.get_page(request.GET.get('page'))
 

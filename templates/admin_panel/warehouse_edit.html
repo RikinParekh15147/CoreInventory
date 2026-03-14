@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Edit Warehouse — Admin Panel{% endblock %}
 {% block page_title %}Edit Warehouse{% endblock %}
-{% block breadcrumb %}<a href="/dashboard/" class="hover:text-primary">Home</a> <span class="mx-1">/</span> <a href="{% url 'access:dashboard' %}" class="hover:text-primary">Admin</a> <span class="mx-1">/</span> <a href="{% url 'access:warehouse-list' %}" class="hover:text-primary">Warehouses</a> <span class="mx-1">/</span> <span class="text-gray-400">{{ warehouse.name }}</span>{% endblock %}
+{% block breadcrumb %}<a href="/dashboard/" class="hover:text-primary">Home</a> <span class="mx-1">/</span> <a href="{% url 'access:dashboard' %}" class="hover:text-primary">Admin</a> <span class="mx-1">/</span> <a href="{% url 'warehouses:list' %}" class="hover:text-primary">Warehouses</a> <span class="mx-1">/</span> <span class="text-gray-400">{{ warehouse.name }}</span>{% endblock %}
 {% block content %}
 <div class="max-w-2xl"><form method="POST" class="space-y-6">{% csrf_token %}
     <div class="bg-white rounded-xl border border-gray-200 p-6"><h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-5">Warehouse Details</h3>
@@ -12,6 +12,6 @@
         </div></div>
     {% if locations %}<div class="bg-white rounded-xl border border-gray-200 p-6"><h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Locations</h3>
         <div class="space-y-2">{% for loc in locations %}<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"><span class="text-sm font-medium text-gray-700">{{ loc.name }}</span><span class="text-xs text-gray-400">{{ loc.loc_type }}</span></div>{% endfor %}</div></div>{% endif %}
-    <div class="flex items-center gap-3"><button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm">Save</button><a href="{% url 'access:warehouse-list' %}" class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium">Cancel</a></div>
+    <div class="flex items-center gap-3"><button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm">Save</button><a href="{% url 'warehouses:list' %}" class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium">Cancel</a></div>
 </form></div>
 {% endblock %}

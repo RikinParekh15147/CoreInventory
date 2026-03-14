@@ -20,10 +20,12 @@ def notification_list(request):
     return render(request, 'alerts/list.html', {'page_obj': page_obj})
 
 
+@login_required
 def notification_count(request):
     """Return unread notification count for HTMX badge."""
-    if request.user.is_authenticated:
-        count = Notification.objects.filter(is_read=False).count()
-    else:
-        count = 0
+    count = Notification.objects.filter(is_read=False).count()
+
+    if hasattr(request, 'htmx') and request.htmx:
+        return render(request, 'alerts/partials/badge.html', {'count': count})
+
     return JsonResponse({'count': count})

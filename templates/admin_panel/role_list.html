@@ -9,7 +9,7 @@
             <div><h3 class="text-lg font-semibold text-gray-900">{{ role.name }}</h3><p class="text-sm text-gray-500">{{ role.description|default:"No description" }}</p></div>
             <a href="{% url 'access:role-edit' role.pk %}" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Edit</a>
         </div>
-        <div class="flex flex-wrap gap-2">{% for rp in role.rolepermission_set.all %}<span class="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">{{ rp.permission.codename }}</span>{% empty %}<span class="text-xs text-gray-400">No permissions assigned</span>{% endfor %}</div>
+        <div class="flex flex-wrap gap-2">{% for rp in role.role_permissions.all %}<span class="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">{{ rp.permission.codename }}</span>{% empty %}<span class="text-xs text-gray-400">No permissions assigned</span>{% endfor %}</div>
     </div>
 {% empty %}{% include "partials/empty_state.html" with title="No roles configured" message="Create roles via the management command." %}{% endfor %}
 </div>

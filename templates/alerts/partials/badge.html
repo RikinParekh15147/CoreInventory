@@ -1,0 +1,4 @@
+<span id="notif-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
+      hx-get="/alerts/count/" hx-trigger="every 30s" hx-target="#notif-badge" hx-swap="outerHTML">
+    {{ count }}
+</span>
