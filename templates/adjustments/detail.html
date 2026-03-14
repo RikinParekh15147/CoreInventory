@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ adjustment.ref }} — CoreInventory{% endblock %}
+{% block page_title %}{{ adjustment.ref }}{% endblock %}
+{% block breadcrumb %}<a href="/dashboard/" class="hover:text-primary">Home</a> <span class="mx-1">/</span> <a href="{% url 'adjustments:list' %}" class="hover:text-primary">Adjustments</a> <span class="mx-1">/</span> <span class="text-gray-400">{{ adjustment.ref }}</span>{% endblock %}
+{% block content %}
+<div class="flex items-center gap-3 mb-6">
+    {% if adjustment.status == 'draft' %}
+    <a href="{% url 'adjustments:edit' adjustment.pk %}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>Edit</a>
+    <form method="POST" action="{% url 'adjustments:validate' adjustment.pk %}">{% csrf_token %}<button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">✓ Validate</button></form>
+    {% endif %}
+    <a href="{% url 'adjustments:list' %}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium ml-auto">← Back</a>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-6"><h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Adjustment Details</h3>
+            <dl class="grid grid-cols-2 gap-4">
+                <div><dt class="text-xs font-medium text-gray-500 uppercase">Reference</dt><dd class="mt-1 text-sm font-mono text-gray-900">{{ adjustment.ref }}</dd></div>
+                <div><dt class="text-xs font-medium text-gray-500 uppercase">Status</dt><dd class="mt-1">{% include "partials/status_badge.html" with status=adjustment.status %}</dd></div>
+                <div><dt class="text-xs font-medium text-gray-500 uppercase">Location</dt><dd class="mt-1 text-sm text-gray-900">{{ adjustment.location }}</dd></div>
+                <div><dt class="text-xs font-medium text-gray-500 uppercase">Reason</dt><dd class="mt-1 text-sm text-gray-900">{{ adjustment.get_reason_display }}</dd></div>
+                <div><dt class="text-xs font-medium text-gray-500 uppercase">Created By</dt><dd class="mt-1 text-sm text-gray-900">{{ adjustment.created_by.full_name|default:adjustment.created_by.email }}</dd></div>
+                {% if adjustment.notes %}<div class="col-span-2"><dt class="text-xs font-medium text-gray-500 uppercase">Notes</dt><dd class="mt-1 text-sm text-gray-700">{{ adjustment.notes }}</dd></div>{% endif %}
+            </dl></div>
+        <div class="bg-white rounded-xl border border-gray-200 p-6"><h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Line Items</h3>
+            {% if lines %}<table class="w-full"><thead><tr class="border-b border-gray-200"><th class="text-left pb-3 text-xs font-semibold text-gray-500 uppercase">Product</th><th class="text-right pb-3 text-xs font-semibold text-gray-500 uppercase">Recorded</th><th class="text-right pb-3 text-xs font-semibold text-gray-500 uppercase">Actual</th><th class="text-right pb-3 text-xs font-semibold text-gray-500 uppercase">Difference</th><th class="text-left pb-3 text-xs font-semibold text-gray-500 uppercase">Unit</th></tr></thead>
+            <tbody class="divide-y divide-gray-100">{% for line in lines %}<tr><td class="py-3 text-sm font-medium text-gray-900">{{ line.product.name }}</td><td class="py-3 text-sm text-right text-gray-600">{{ line.recorded_qty }}</td><td class="py-3 text-sm text-right font-semibold text-gray-900">{{ line.actual_qty }}</td><td class="py-3 text-sm text-right font-semibold {% if line.difference > 0 %}text-green-600{% elif line.difference < 0 %}text-red-600{% else %}text-gray-500{% endif %}">{% if line.difference > 0 %}+{% endif %}{{ line.difference }}</td><td class="py-3 text-sm text-gray-600">{{ line.unit.abbreviation }}</td></tr>{% endfor %}</tbody></table>
+            {% else %}<p class="text-sm text-gray-500 text-center py-6">No line items</p>{% endif %}
+        </div>
+    </div>
+    <div><div class="bg-white rounded-xl border border-gray-200 p-6"><h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Timeline</h3><dl class="space-y-3"><div><dt class="text-xs font-medium text-gray-500">Created</dt><dd class="text-sm text-gray-900">{{ adjustment.created_at|date:"M d, Y H:i" }}</dd></div>{% if adjustment.validated_at %}<div><dt class="text-xs font-medium text-gray-500">Validated</dt><dd class="text-sm text-gray-900">{{ adjustment.validated_at|date:"M d, Y H:i" }}</dd></div>{% endif %}</dl></div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Users — Admin Panel{% endblock %}
+{% block page_title %}Users{% endblock %}
+{% block breadcrumb %}<a href="/dashboard/" class="hover:text-primary">Home</a> <span class="mx-1">/</span> <a href="{% url 'access:dashboard' %}" class="hover:text-primary">Admin</a> <span class="mx-1">/</span> <span class="text-gray-400">Users</span>{% endblock %}
+{% block content %}
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <table class="w-full"><thead><tr class="border-b border-gray-200 bg-gray-50"><th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">User</th><th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Role</th><th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Warehouse</th><th class="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Active</th><th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Joined</th><th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase"></th></tr></thead>
+    <tbody class="divide-y divide-gray-100">{% for u in users %}<tr class="hover:bg-gray-50 transition-colors">
+        <td class="px-6 py-4"><div><p class="text-sm font-medium text-gray-900">{{ u.full_name|default:u.email }}</p><p class="text-xs text-gray-500">{{ u.email }}</p></div></td>
+        <td class="px-6 py-4 text-sm text-gray-600">{{ u.role.name|default:"—" }}</td>
+        <td class="px-6 py-4 text-sm text-gray-600">{{ u.warehouse.name|default:"—" }}</td>
+        <td class="px-6 py-4 text-center">{% if u.is_active %}<span class="inline-block w-2.5 h-2.5 bg-green-500 rounded-full"></span>{% else %}<span class="inline-block w-2.5 h-2.5 bg-gray-300 rounded-full"></span>{% endif %}</td>
+        <td class="px-6 py-4 text-sm text-gray-600">{{ u.date_joined|date:"M d, Y" }}</td>
+        <td class="px-6 py-4 text-right"><a href="{% url 'access:user-edit' u.pk %}" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Edit</a></td>
+    </tr>{% endfor %}</tbody></table>
+</div>
+{% endblock %}
