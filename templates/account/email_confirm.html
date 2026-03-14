@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Email — CoreInventory{% endblock %}
+
+{% block auth_content %}
+<div class="w-full max-w-md px-6">
+    <div class="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-8 shadow-2xl text-center">
+        <div class="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-xl mb-4">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+        </div>
+
+        {% if confirmation %}
+        <h1 class="text-2xl font-bold text-white mb-2">Confirm <span class="text-blue-400">Email</span></h1>
+        <p class="text-gray-400 text-sm mb-6">
+            Please confirm that <strong class="text-white">{{ confirmation.email_address.email }}</strong> is your email address.
+        </p>
+        <form method="POST" action="{% url 'account_confirm_email' confirmation.key %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200">
+                Confirm Email
+            </button>
+        </form>
+        {% else %}
+        <h1 class="text-2xl font-bold text-white mb-2">Invalid <span class="text-red-400">Link</span></h1>
+        <p class="text-gray-400 text-sm mb-6">
+            This email confirmation link is invalid or has expired.
+        </p>
+        {% endif %}
+
+        <p class="text-gray-500 text-sm mt-6">
+            <a href="{% url 'account_login' %}" class="text-blue-400 hover:text-blue-300 transition-colors">Back to Sign In</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

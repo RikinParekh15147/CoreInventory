@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit {{ receipt.ref }}{% else %}New Receipt{% endif %} — CoreInventory{% endblock %}
+{% block page_title %}{% if is_edit %}Edit Receipt{% else %}New Receipt{% endif %}{% endblock %}
+{% block breadcrumb %}<a href="/dashboard/" class="hover:text-primary">Home</a> <span class="mx-1">/</span> <a href="{% url 'receipts:list' %}" class="hover:text-primary">Receipts</a> <span class="mx-1">/</span> <span class="text-gray-400">{% if is_edit %}{{ receipt.ref }}{% else %}New{% endif %}</span>{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl">
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+        {% if form.errors or formset.errors %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p class="text-red-700 text-sm font-medium">Please correct the errors below.</p>
+        </div>
+        {% endif %}
+
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-5">Receipt Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div><label class="block text-sm font-medium text-gray-700 mb-1.5">Supplier Name *</label>{{ form.supplier_name }}</div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1.5">Contact</label>{{ form.supplier_contact }}</div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1.5">Destination *</label>{{ form.destination }}</div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1.5">Scheduled Date *</label>{{ form.scheduled_date }}</div>
+                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1.5">Notes</label>{{ form.notes }}</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-5">Line Items</h3>
+            {{ formset.management_form }}
+            <div id="line-items" class="space-y-4">
+                {% for line_form in formset %}
+                <div class="grid grid-cols-12 gap-3 items-end p-4 bg-gray-50 rounded-lg">
+                    {% if line_form.instance.pk %}{{ line_form.id }}{% endif %}
+                    <div class="col-span-4"><label class="block text-xs font-medium text-gray-500 mb-1">Product</label>{{ line_form.product }}</div>
+                    <div class="col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1">Expected Qty</label>{{ line_form.expected_qty }}</div>
+                    <div class="col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1">Received Qty</label>{{ line_form.received_qty }}</div>
+                    <div class="col-span-2"><label class="block text-xs font-medium text-gray-500 mb-1">Unit</label>{{ line_form.unit }}</div>
+                    <div class="col-span-2 flex items-center gap-2">
+                        {% if line_form.instance.pk %}<label class="flex items-center gap-1 text-xs text-red-500"><input type="checkbox" name="{{ line_form.DELETE.html_name }}" class="w-4 h-4">Delete</label>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm transition-colors">{% if is_edit %}Save Changes{% else %}Create Receipt{% endif %}</button>
+            <a href="{% if is_edit %}{% url 'receipts:detail' receipt.pk %}{% else %}{% url 'receipts:list' %}{% endif %}" class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

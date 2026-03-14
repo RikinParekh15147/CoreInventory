@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ receipt.ref }} — CoreInventory{% endblock %}
+{% block page_title %}{{ receipt.ref }}{% endblock %}
+{% block breadcrumb %}<a href="/dashboard/" class="hover:text-primary">Home</a> <span class="mx-1">/</span> <a href="{% url 'receipts:list' %}" class="hover:text-primary">Receipts</a> <span class="mx-1">/</span> <span class="text-gray-400">{{ receipt.ref }}</span>{% endblock %}
+
+{% block content %}
+<!-- Actions -->
+<div class="flex items-center gap-3 mb-6">
+    {% if receipt.status != 'done' and receipt.status != 'cancelled' %}
+    <a href="{% url 'receipts:edit' receipt.pk %}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        Edit
+    </a>
+    {% endif %}
+
+    {% if receipt.status == 'draft' %}
+    <form method="POST" action="{% url 'receipts:change-status' receipt.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="waiting">
+        <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors">Mark Waiting</button>
+    </form>
+    {% elif receipt.status == 'waiting' %}
+    <form method="POST" action="{% url 'receipts:change-status' receipt.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="ready">
+        <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">Mark Ready</button>
+    </form>
+    {% elif receipt.status == 'ready' %}
+    <form method="POST" action="{% url 'receipts:change-status' receipt.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="done">
+        <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">✓ Validate & Complete</button>
+    </form>
+    {% endif %}
+
+    {% if receipt.status != 'done' and receipt.status != 'cancelled' %}
+    <form method="POST" action="{% url 'receipts:change-status' receipt.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="cancelled">
+        <button type="submit" class="px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors" onclick="return confirm('Cancel this receipt?')">Cancel</button>
+    </form>
+    {% endif %}
+
+    <a href="{% url 'receipts:list' %}" class="px-4 py-2 border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors ml-auto">← Back</a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Receipt Details</h3>
+            <dl class="grid grid-cols-2 gap-4">
+                <div><dt class="text-xs font-medium text-gray-500 uppercase">Reference</dt><dd class="mt-1 text-sm font-mono text-gray-900">{{ receipt.ref }}</dd></div>
+                <div><dt class="text-xs font-medium text-gray-500 uppercase">Status</dt><dd class="mt-1">{% include "partials/status_badge.html" with status=receipt.status %}</dd></div>
+                <div><dt class="text-xs font-medium text-gray-500 uppercase">Supplier</dt><dd class="mt-1 text-sm text-gray-900">{{ receipt.supplier_name }}</dd></div>
+                <div><dt class="text-xs font-medium text-gray-500 uppercase">Destination</dt><dd class="mt-1 text-sm text-gray-900">{{ receipt.destination }}</dd></div>
+                <div><dt class="text-xs font-medium text-gray-500 uppercase">Scheduled Date</dt><dd class="mt-1 text-sm text-gray-900">{{ receipt.scheduled_date|date:"M d, Y" }}</dd></div>
+                <div><dt class="text-xs font-medium text-gray-500 uppercase">Created By</dt><dd class="mt-1 text-sm text-gray-900">{{ receipt.created_by.full_name|default:receipt.created_by.email }}</dd></div>
+                {% if receipt.notes %}<div class="col-span-2"><dt class="text-xs font-medium text-gray-500 uppercase">Notes</dt><dd class="mt-1 text-sm text-gray-700">{{ receipt.notes }}</dd></div>{% endif %}
+            </dl>
+        </div>
+
+        <!-- Line Items -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Line Items</h3>
+            {% if lines %}
+            <table class="w-full">
+                <thead><tr class="border-b border-gray-200"><th class="text-left pb-3 text-xs font-semibold text-gray-500 uppercase">Product</th><th class="text-right pb-3 text-xs font-semibold text-gray-500 uppercase">Expected</th><th class="text-right pb-3 text-xs font-semibold text-gray-500 uppercase">Received</th><th class="text-left pb-3 text-xs font-semibold text-gray-500 uppercase">Unit</th></tr></thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for line in lines %}
+                    <tr>
+                        <td class="py-3 text-sm font-medium text-gray-900">{{ line.product.name }}</td>
+                        <td class="py-3 text-sm text-right text-gray-600">{{ line.expected_qty }}</td>
+                        <td class="py-3 text-sm text-right font-semibold text-gray-900">{{ line.received_qty }}</td>
+                        <td class="py-3 text-sm text-gray-600">{{ line.unit.abbreviation }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-sm text-gray-500 text-center py-6">No line items</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Timeline</h3>
+            <dl class="space-y-3">
+                <div><dt class="text-xs font-medium text-gray-500">Created</dt><dd class="text-sm text-gray-900">{{ receipt.created_at|date:"M d, Y H:i" }}</dd></div>
+                {% if receipt.validated_at %}<div><dt class="text-xs font-medium text-gray-500">Validated</dt><dd class="text-sm text-gray-900">{{ receipt.validated_at|date:"M d, Y H:i" }}</dd></div>{% endif %}
+                {% if receipt.validated_by %}<div><dt class="text-xs font-medium text-gray-500">Validated By</dt><dd class="text-sm text-gray-900">{{ receipt.validated_by.full_name|default:receipt.validated_by.email }}</dd></div>{% endif %}
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

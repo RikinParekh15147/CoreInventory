@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Notifications — CoreInventory{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block breadcrumb %}<a href="/dashboard/" class="hover:text-primary">Home</a> <span class="mx-1">/</span> <span class="text-gray-400">Alerts</span>{% endblock %}
+{% block content %}
+{% if page_obj %}
+<div class="space-y-3">{% for n in page_obj %}
+    <div class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4 {% if not n.is_read %}border-l-4 border-l-amber-500{% endif %}">
+        <div class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center {% if n.notification_type == 'low_stock' %}bg-amber-50{% elif n.notification_type == 'out_of_stock' %}bg-red-50{% else %}bg-blue-50{% endif %}">
+            {% if n.notification_type == 'out_of_stock' %}
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+            {% else %}
+            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            {% endif %}
+        </div>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if n.notification_type == 'out_of_stock' %}bg-red-100 text-red-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ n.get_notification_type_display }}</span>
+                <span class="text-xs text-gray-400">{{ n.created_at|timesince }} ago</span>
+            </div>
+            <p class="mt-1.5 text-sm text-gray-900">{{ n.message }}</p>
+            <div class="mt-1 flex items-center gap-4 text-xs text-gray-500">
+                {% if n.product %}<span>Product: <strong>{{ n.product.name }}</strong></span>{% endif %}
+                {% if n.location %}<span>Location: <strong>{{ n.location }}</strong></span>{% endif %}
+            </div>
+        </div>
+    </div>
+{% endfor %}</div>
+{% include "partials/pagination.html" %}
+{% else %}
+{% include "partials/empty_state.html" with icon="bell" title="No notifications" message="You're all caught up! Notifications will appear when stock levels need attention." %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{# Reusable status badge partial #}
+{# Usage: {% include "partials/status_badge.html" with status="done" %} #}
+{% if status == 'draft' %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Draft</span>
+{% elif status == 'waiting' %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Waiting</span>
+{% elif status == 'ready' %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Ready</span>
+{% elif status == 'done' %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Done</span>
+{% elif status == 'cancelled' %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 line-through">Cancelled</span>
+{% else %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">{{ status|title }}</span>
+{% endif %}

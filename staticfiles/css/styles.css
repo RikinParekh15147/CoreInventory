@@ -1,0 +1,14 @@
+/* CoreInventory — CSS Custom Properties */
+:root {
+    --primary: #2563EB;
+    --success: #16A34A;
+    --warning: #D97706;
+    --danger: #DC2626;
+    --info: #0891B2;
+    --sidebar-bg: #111827;
+    --sidebar-text: #9CA3AF;
+    --sidebar-active: #1F2937;
+    --content-bg: #F9FAFB;
+    --card-bg: #FFFFFF;
+    --border: #E5E7EB;
+}
