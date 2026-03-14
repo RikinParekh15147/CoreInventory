@@ -8,13 +8,10 @@ services:
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: coreinventory-db
+          name: core-inventory
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: coreinventory-redis
-          property: connectionString
+        value: "rediss://default:gQAAAAAAARewAAIncDE3MTZiMzFlYTkxZjM0ZDRhOTIzZGMyYzllZWM4MTdiNnAxNzE2MDA@endless-ox-71600.upstash.io:6379"
       - key: SECRET_KEY
         generateValue: true
       - key: DJANGO_SETTINGS_MODULE
@@ -33,13 +30,10 @@ services:
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: coreinventory-db
+          name: core-inventory
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: coreinventory-redis
-          property: connectionString
+        value: "rediss://default:gQAAAAAAARewAAIncDE3MTZiMzFlYTkxZjM0ZDRhOTIzZGMyYzllZWM4MTdiNnAxNzE2MDA@endless-ox-71600.upstash.io:6379"
       - key: SECRET_KEY
         fromService:
           type: web
@@ -57,13 +51,10 @@ services:
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: coreinventory-db
+          name: core-inventory
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: coreinventory-redis
-          property: connectionString
+        value: "rediss://default:gQAAAAAAARewAAIncDE3MTZiMzFlYTkxZjM0ZDRhOTIzZGMyYzllZWM4MTdiNnAxNzE2MDA@endless-ox-71600.upstash.io:6379"
       - key: SECRET_KEY
         fromService:
           type: web
@@ -74,11 +65,8 @@ services:
 
 databases:
   # PostgreSQL Database
-  - name: coreinventory-db
-    databaseName: coreinventory
-    user: coreinventory_user
+  - name: core-inventory
+    databaseName: coredb_5cra
+    user: coredbuser
 
-  # Redis instance for Celery
-  - type: redis
-    name: coreinventory-redis
-    plan: free
+
