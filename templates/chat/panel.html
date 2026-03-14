@@ -8,12 +8,15 @@
          x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
 
-    <!-- Modal Panel -->
-    <div class="absolute inset-0 m-auto w-full max-w-2xl h-[85vh] sm:h-[80vh] bg-gray-900 shadow-2xl flex flex-col rounded-2xl border border-gray-700/50 overflow-hidden"
-         x-show="open" x-transition:enter="transition ease-out duration-300 transform"
-         x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+    <!-- Slide-out Drawer Panel -->
+    <div class="fixed inset-y-0 right-0 w-full max-w-md bg-gray-900 shadow-2xl flex flex-col border-l border-gray-700/50 overflow-hidden"
+         x-show="open" 
+         x-transition:enter="transition ease-out duration-300 transform"
+         x-transition:enter-start="translate-x-full" 
+         x-transition:enter-end="translate-x-0"
          x-transition:leave="transition ease-in duration-200 transform"
-         x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+         x-transition:leave-start="translate-x-0" 
+         x-transition:leave-end="translate-x-full">
 
         <!-- Header -->
         <div class="flex items-center justify-between px-5 py-4 border-b border-gray-700/50 bg-gray-900/80 backdrop-blur-sm">
@@ -130,8 +133,92 @@
                     </div>
                     <div class="bg-gray-900/50 rounded-xl p-4 mb-4 border border-gray-700/50">
                         <p class="text-sm text-gray-300 mb-2 font-medium" x-text="pendingAction.summary"></p>
-                        <div class="text-xs text-gray-500 font-mono bg-gray-900 rounded-lg p-3 max-h-32 overflow-y-auto">
-                            <pre x-text="JSON.stringify(pendingAction.data, null, 2)" class="whitespace-pre-wrap"></pre>
+                        <!-- Dynamic Editable Form -->
+                        <div class="mt-3 space-y-3">
+                            <!-- create_receipt -->
+                            <template x-if="pendingAction.action_type === 'create_receipt'">
+                                <div class="space-y-2">
+                                    <input type="text" x-model="pendingAction.data.supplier_name" placeholder="Supplier Name" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <input type="text" x-model="pendingAction.data.destination_location" placeholder="Destination Location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <template x-if="pendingAction.data.lines">
+                                        <div class="space-y-2">
+                                            <template x-for="(line, i) in pendingAction.data.lines" :key="i">
+                                                <div class="flex gap-2">
+                                                    <input type="text" x-model="line.product_name" placeholder="Product" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                    <input type="number" x-model="line.expected_qty" placeholder="Qty" class="w-24 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            
+                            <!-- create_delivery -->
+                            <template x-if="pendingAction.action_type === 'create_delivery'">
+                                <div class="space-y-2">
+                                    <input type="text" x-model="pendingAction.data.customer_name" placeholder="Customer Name" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <input type="text" x-model="pendingAction.data.source_location" placeholder="Source Location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <template x-if="pendingAction.data.lines">
+                                        <div class="space-y-2">
+                                            <template x-for="(line, i) in pendingAction.data.lines" :key="i">
+                                                <div class="flex gap-2">
+                                                    <input type="text" x-model="line.product_name" placeholder="Product" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                    <input type="number" x-model="line.requested_qty" placeholder="Qty" class="w-24 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            
+                            <!-- create_transfer -->
+                            <template x-if="pendingAction.action_type === 'create_transfer'">
+                                <div class="space-y-2">
+                                    <input type="text" x-model="pendingAction.data.from_location" placeholder="From Location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <input type="text" x-model="pendingAction.data.to_location" placeholder="To Location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <template x-if="pendingAction.data.lines">
+                                        <div class="space-y-2">
+                                            <template x-for="(line, i) in pendingAction.data.lines" :key="i">
+                                                <div class="flex gap-2">
+                                                    <input type="text" x-model="line.product_name" placeholder="Product" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                    <input type="number" x-model="line.qty" placeholder="Qty" class="w-24 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            
+                            <!-- create_adjustment -->
+                            <template x-if="pendingAction.action_type === 'create_adjustment'">
+                                <div class="space-y-2">
+                                    <input type="text" x-model="pendingAction.data.location" placeholder="Location" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                    <select x-model="pendingAction.data.reason" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                        <option value="count_correction">Count Correction</option>
+                                        <option value="damage">Damage</option>
+                                        <option value="theft">Theft</option>
+                                        <option value="expiry">Expiry</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                    <template x-if="pendingAction.data.lines">
+                                        <div class="space-y-2">
+                                            <template x-for="(line, i) in pendingAction.data.lines" :key="i">
+                                                <div class="flex gap-2">
+                                                    <input type="text" x-model="line.product_name" placeholder="Product" class="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                    <input type="number" x-model="line.actual_qty" placeholder="Actual Qty" class="w-24 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white">
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            
+                            <!-- fallback for other mutations -->
+                            <template x-if="!['create_receipt', 'create_delivery', 'create_transfer', 'create_adjustment'].includes(pendingAction.action_type)">
+                                <div class="text-xs text-gray-500 font-mono bg-gray-900 rounded-lg p-3 max-h-32 overflow-y-auto">
+                                    <pre x-text="JSON.stringify(pendingAction.data, null, 2)" class="whitespace-pre-wrap"></pre>
+                                </div>
+                            </template>
                         </div>
                     </div>
                     <div class="flex gap-3">
@@ -189,6 +276,13 @@ function chatPanel() {
             const prompt = this.input.trim();
             if (!prompt || this.loading) return;
             this.input = '';
+            
+            // Gather history before appending new ones
+            const history = this.messages.filter(m => m.role !== 'loading').map(m => ({
+                role: m.role,
+                content: m.content
+            }));
+            
             this.messages.push({ role: 'user', content: prompt });
             this.messages.push({ role: 'loading', content: '' });
             this.loading = true;
@@ -198,7 +292,7 @@ function chatPanel() {
                 const res = await fetch('/chat/send/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': this.csrfToken },
-                    body: JSON.stringify({ prompt })
+                    body: JSON.stringify({ prompt, history })
                 });
                 const data = await res.json();
                 // Remove loading
@@ -213,13 +307,15 @@ function chatPanel() {
                     if (r.products) msg.products = r.products;
                     if (r.stock) msg.stock = r.stock;
                     this.messages.push(msg);
-                    // Needs confirmation (or more info)
+                    
+                    // Display questions if it's request_info
                     if (data.action.action_type === 'request_info') {
                         this.messages.push({ role: 'ai', content: '🤔 ' + data.action.summary });
-                    } else {
-                        this.messages.push({ role: 'ai', content: '⚡ ' + data.action.summary + '<br><span class="text-purple-400 text-xs">Awaiting your confirmation below...</span>' });
-                        this.pendingAction = data.action;
                     }
+                } else {
+                    // Needs confirmation for mutation actions
+                    this.messages.push({ role: 'ai', content: '⚡ ' + data.action.summary + '<br><span class="text-purple-400 text-xs">Awaiting your confirmation below...</span>' });
+                    this.pendingAction = data.action;
                 }
 
             } catch (err) {

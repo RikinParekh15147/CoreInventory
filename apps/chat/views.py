@@ -19,13 +19,15 @@ def chat_send(request):
     try:
         body = json.loads(request.body)
         prompt = body.get('prompt', '').strip()
+        history = body.get('history', [])
     except (json.JSONDecodeError, AttributeError):
         prompt = request.POST.get('prompt', '').strip()
+        history = []
 
     if not prompt:
         return JsonResponse({'error': 'Empty prompt.'}, status=400)
 
-    result = call_groq(prompt)
+    result = call_groq(prompt, request.user, history)
 
     # For non-confirmation actions (queries), execute immediately
     if not result.get('needs_confirmation', True):

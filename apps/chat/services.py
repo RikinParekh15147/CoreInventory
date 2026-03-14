@@ -108,6 +108,7 @@ You MUST return a JSON object with this exact structure:
 ## Rules:
 - For dates, if none specified use today's date.
 - Match product names and locations fuzzily from the context provided.
+- Context Accumulation: If you are in a multi-turn conversation asking for information (using `request_info`), you MUST remember the details the user provided in previous turns. When you finally have all the information and return a mutation action (e.g., `create_receipt`), its `data` object MUST include ALL the accumulated fields from the entire conversation history.
 - If the user asks to create/update something but misses a CRITICAL detail (like product name, location, or quantity), you MUST use `action_type: "request_info"` instead of guessing or executing. Set the summary to the question you want to ask. Set needs_confirmation to false.
 - For queries (query_products, query_stock, general_answer, request_info), set needs_confirmation to false.
 - For ALL mutations (create_*, update_*), set needs_confirmation to true.
@@ -159,7 +160,7 @@ def _build_context(user=None):
     user_context = "Unknown User"
     if user:
         role_name = user.role.name if user.role else "No Role"
-        perms = [rp.permission.codename for rp in getattr(user.role, 'role_permissions', []) if rp.granted] if user.role else []
+        perms = [rp.permission.codename for rp in user.role.role_permissions.all() if rp.granted] if user.role and hasattr(user.role, 'role_permissions') else []
         user_context = f"User: {user.full_name or user.email} | Role: {role_name}\nGranted Permissions: {', '.join(perms) if perms else 'None'}"
 
     context = f"""
@@ -188,19 +189,32 @@ def _build_context(user=None):
     return context
 
 
-def call_groq(user_prompt, user=None):
+def call_groq(user_prompt, user=None, history=None):
     """Send prompt to Groq and return parsed JSON action."""
+    if history is None:
+        history = []
+        
     client = Groq(api_key=settings.GROQ_API_KEY)
     context = _build_context(user)
-    full_user_message = f"{context}\n\n## User Request:\n{user_prompt}"
+    
+    system_content = f"{SYSTEM_PROMPT}\n\n{context}"
+    messages = [{"role": "system", "content": system_content}]
+    
+    # Add recent history (limit to avoid token overflow)
+    for msg in history[-10:]:
+        role = "assistant" if msg.get("role") == "ai" else "user"
+        content = msg.get("content", "")
+        # Strip HTML tags or complex formatting if needed, but raw string is okay for Groq
+        if content:
+            messages.append({"role": role, "content": content})
+            
+    # Add current prompt
+    messages.append({"role": "user", "content": f"## User Request:\n{user_prompt}"})
 
     try:
         response = client.chat.completions.create(
             model=GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": full_user_message},
-            ],
+            messages=messages,
             response_format={"type": "json_object"},
             temperature=0.1,
             max_tokens=2048,
@@ -297,14 +311,13 @@ def execute_action(action_json, user):
         'request_info': _exec_request_info,
     }
 
-    # Extract required permission dynamically based on action mappings
+    # Extract required permission dynamically based on action mappings (ONLY FOR MUTATIONS)
     req_perms = {
         'create_receipt': 'can_create_receipt',
         'create_delivery': 'can_create_delivery',
         'create_transfer': 'can_create_transfer',
         'create_adjustment': 'can_create_adjustment',
-        'query_products': 'can_view_products',
-        'query_stock': 'can_view_move_history',
+        'update_status': 'can_approve_documents', # Or a similar permission if you have one
     }
     
     # Check permissions if mapped
