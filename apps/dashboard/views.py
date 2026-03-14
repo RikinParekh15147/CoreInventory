@@ -9,6 +9,9 @@ from apps.products.models import Product
 from apps.receipts.models import Receipt
 from apps.deliveries.models import Delivery
 from apps.ledger.models import StockMove, Stock
+from apps.alerts.models import Notification
+from apps.chat.services import generate_user_insights
+from django.views.decorators.http import require_POST
 
 
 @login_required
@@ -44,6 +47,12 @@ def dashboard_view(request):
         'product', 'from_location', 'to_location', 'created_by'
     ).order_by('-created_at')[:15]
 
+    # Fetch existing AI insights for the user
+    ai_insights = Notification.objects.filter(
+        user=request.user, 
+        type='ai_insight'
+    ).order_by('-created_at')
+
     context = {
         'total_products': total_products,
         'low_stock_count': low_stock_count,
@@ -51,6 +60,7 @@ def dashboard_view(request):
         'pending_receipts': pending_receipts,
         'pending_deliveries': pending_deliveries,
         'recent_moves': recent_moves,
+        'ai_insights': ai_insights,
     }
 
     # Return partial for HTMX requests
@@ -64,3 +74,20 @@ def dashboard_view(request):
 def kpis_partial(request):
     """HTMX partial endpoint for refreshing KPI cards."""
     return dashboard_view(request)
+
+
+@login_required
+@require_POST
+def generate_ai_insights(request):
+    """HTMX endpoint to trigger AI insight generation."""
+    result = generate_user_insights(request.user)
+    
+    insights = Notification.objects.filter(
+        user=request.user, 
+        type='ai_insight'
+    ).order_by('-created_at')
+    
+    return render(request, 'dashboard/partials/ai_insights_content.html', {
+        'ai_insights': insights,
+        'ai_error': result.get('message') if not result.get('success') else None,
+    })

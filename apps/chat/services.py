@@ -607,3 +607,61 @@ def _exec_general_answer(data, user):
         'message': data.get('answer', 'No answer provided.'),
         'result_type': 'text',
     }
+
+
+def generate_user_insights(user):
+    """
+    Generate actionable AI insights based on the current database state
+    and save them as Notifications for the given user.
+    """
+    from apps.alerts.models import Notification
+    client = Groq(api_key=settings.GROQ_API_KEY)
+    context = _build_context()
+    
+    prompt = f"""
+{context}
+
+Based on the above inventory state, please provide exactly 3 actionable insights or warnings for the warehouse manager.
+Consider low stock items, lack of pending receipts, high volume of pending deliveries vs available stock, etc.
+
+Return the result as a JSON object with this exact structure, no extra text:
+{{
+  "insights": [
+    "Insight 1 text...",
+    "Insight 2 text...",
+    "Insight 3 text..."
+  ]
+}}
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {"role": "system", "content": "You are an inventory analyst AI. Focus on actionable insights."},
+                {"role": "user", "content": prompt},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.3,
+            max_tokens=1024,
+        )
+        content = response.choices[0].message.content
+        data = json.loads(content)
+        insights = data.get('insights', [])
+        
+        # Keep things fresh: remove old insights for this user
+        Notification.objects.filter(user=user, type='ai_insight').delete()
+        
+        for ins in insights:
+            Notification.objects.create(
+                user=user,
+                type='ai_insight',
+                message=ins,
+                is_read=False
+            )
+            
+        return {"success": True, "count": len(insights)}
+
+    except Exception as e:
+        logger.error("Error generating AI insights: %s", e)
+        return {"success": False, "message": str(e)}

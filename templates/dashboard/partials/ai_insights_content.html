@@ -1,0 +1,24 @@
+{% if ai_error %}
+<div class="p-4 bg-red-50 text-red-700 rounded-lg text-sm border border-red-100">
+    <p><strong>Error:</strong> {{ ai_error }}</p>
+</div>
+{% elif ai_insights %}
+<ul class="space-y-3">
+    {% for insight in ai_insights %}
+    <li class="p-4 bg-white rounded-lg border border-indigo-100 shadow-sm flex gap-3">
+        <div class="flex-shrink-0 mt-0.5">
+            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div>
+            <p class="text-sm text-gray-800 leading-relaxed">{{ insight.message }}</p>
+            <p class="text-xs text-gray-400 mt-1">{{ insight.created_at|timesince }} ago</p>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="text-center py-6 text-indigo-400">
+    <svg class="mx-auto w-10 h-10 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    <p class="text-sm">Click "Generate New Insights" to analyze your current inventory data.</p>
+</div>
+{% endif %}

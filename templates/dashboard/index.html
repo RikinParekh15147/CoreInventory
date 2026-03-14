@@ -66,6 +66,27 @@
     </a>
 </div>
 
+<!-- AI Insights -->
+<div class="mb-8">
+    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-indigo-900 uppercase tracking-wider mb-0 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                AI Inventory Insights
+            </h3>
+            <button hx-post="{% url 'dashboard:generate_ai_insights' %}"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    hx-target="#ai-insights-content"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors shadow-sm font-semibold">
+                Generate New Insights
+            </button>
+        </div>
+        <div id="ai-insights-content">
+            {% include "dashboard/partials/ai_insights_content.html" %}
+        </div>
+    </div>
+</div>
+
 <!-- Quick Actions + Activity Feed -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
